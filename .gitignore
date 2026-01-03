@@ -1,0 +1,10 @@
+# Ignorar arquivos temporários do Python
+__pycache__/
+*.py[cod]
+
+# Ignorar arquivos de sistema
+.DS_Store
+Thumbs.db
+
+*.xlsx
+*.txt
