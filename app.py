@@ -50,6 +50,55 @@ df = carregar_dados()
 st.markdown("---")
 
 st.subheader("📊 History of Records")
+
+
+
+# --- INPUT FORM ---
+with st.form("form_register"):
+    st.subheader("📝 New registration")
+
+    # Organizing them into columns to make them visual.
+    col1, col2 = st.columns(2)
+
+    with col1:
+        register_date = st.date_input("Date")
+        category = st.selectbox(
+            "Category",
+            ["Studies", "Work", "Read", "Exercise", "English", "Other"]
+        
+        )
+    with col2:
+        time = st.number_input("Time Spent (minutes)", min_value=0, step=5)
+        activity = st.text_input("Detail of the activity")
+    notes = st.text_input("Observation / Insights", placeholder= "What you learn today?")
+
+    # Send button
+    submitted = st.form_submit_button("💾 Save Register")
+
+# --- LOGIC OF SAVE ---
+if submitted:
+    # Create a new row of data
+    new_row = pd.DataFrame({
+        "Date": [register_date],
+        "Category": [category],
+        "Activity": [activity],
+        "Duration": [time],
+        "Notes": [notes]
+    })
+    
+    # Add in exist dataframe
+    df = pd.concat([df, new_row], ignore_index=True)
+
+    try:
+        df.to_csv("productivity_database.csv", index=False)
+        st.success("Register saved successfully!")
+        # Rerun forces the page to reload to display the updated table
+        st.rerun()
+    except PermissionError:
+            st.error("⚠️ ERROR: Close the Excel file and try again!")
+
+
+
 # Display the dataframe on the screen (If it's empty, will show only the headers)
 st.dataframe(df,use_container_width=True)
 if df.empty:
