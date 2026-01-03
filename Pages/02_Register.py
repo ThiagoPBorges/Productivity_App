@@ -3,19 +3,14 @@ import pandas as pd
 import os
 from datetime import date
 
-# streamlit run app.py
-
-# Page Setup
 st.set_page_config(
-    page_title="Productivity App",
-    page_icon="🎯",
-    layout="wide"
+    page_title="Register",
+    page_icon="📝",
+    layout="centered"
 )
 
-# Main Header
-st.title("🎯 FocusData: Productivity Dashboard")
-st.write("Record and analyze your Studies, Training and Personal Pojects.")
-
+st.title("📝 Register")
+st.markdown("---")
 
 # --- Functions (Backend) ---
 def load_data ():
@@ -39,44 +34,6 @@ def load_data ():
             return pd.DataFrame() # Returns empty to not crashing the app
 
 df = load_data()
-
-
-st.markdown("---")
-st.subheader("📊 History of Records")
-
-
-# --- SIDEBAR & FILTERS ---
-st.sidebar.header("Filters")
-
-# Create a lista of options for categories
-categories_list = ["General"] + list(df["Category"].unique())
-# Create a selection box on the sidebar
-selected_category = st.sidebar.selectbox("Category", categories_list)
-if selected_category != "General":
-    df = df[df["Category"] == selected_category]
-
-
-# METRICS & KPI's
-
-total_hours = df['Duration'].sum() / 60
-total_registers = df.shape[0]
-
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.metric("Total registers", value=total_registers)
-with c2:
-    st.metric("Total Hours", value=f"{total_hours:.1f} h")
-with c3:
-    st.metric("Mean per register", value=f"{total_hours/total_registers:.1f} h")
-
-data_groups_graphic = df.groupby("Category")['Duration'].sum()
-
-if df.shape[0] > 0:
-    st.subheader("Time per Category")
-    st.bar_chart(data_groups_graphic, use_container_width=True)
-
-
 
 
 # --- INPUT FORM ---
@@ -119,10 +76,3 @@ if submitted:
         st.rerun()
     except PermissionError:
             st.error("⚠️ ERROR: Close the Excel file and try again!")
-
-
-
-# Display the dataframe on the screen (If it's empty, will show only the headers)
-st.dataframe(df,use_container_width=True)
-if df.empty:
-    st.info("No record found. Your excel file has been create and is ready to use")
