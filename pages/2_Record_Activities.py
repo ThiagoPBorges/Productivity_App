@@ -3,6 +3,14 @@ import pandas as pd
 import os
 from datetime import date
 from database import salvar_registro
+from database import carregar_dados
+
+df = carregar_dados()
+
+if df.empty:
+    st.warning("Nenhum dado encontrado no Google Sheets. Adicione o primeiro!")
+    st.stop()
+
 
 st.set_page_config(
     page_title="Register",
@@ -43,3 +51,5 @@ if submitted:
         st.balloons() # Um efeito visual de comemoração
     else:
         st.error("❌ Erro ao salvar. Verifique sua conexão.")
+
+st.dataframe(df)

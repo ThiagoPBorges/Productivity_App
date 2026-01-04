@@ -2,21 +2,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import streamlit as st
-
-# --- CONFIGURAÇÃO ---
-# Define o escopo (o que o robô pode acessar: Drive e Planilhas)
-SCOPE = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
-
-# --- ATENÇÃO: Substitua a função antiga por esta no database.py ---
-
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import pandas as pd
-import streamlit as st
-import os # <--- IMPORTANTE: Adicione essa importação se não tiver
+import os
 
 # --- CONFIGURAÇÃO ---
 SCOPE = [
