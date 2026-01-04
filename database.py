@@ -12,28 +12,47 @@ SCOPE = [
 
 # --- ATENÇÃO: Substitua a função antiga por esta no database.py ---
 
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
+import streamlit as st
+import os # <--- IMPORTANTE: Adicione essa importação se não tiver
+
+# --- CONFIGURAÇÃO ---
+SCOPE = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
 def conectar_google_sheets():
     """
-    Função que autentica e retorna a aba da planilha.
-    Tenta ler primeiro dos Secrets (Nuvem), se falhar, tenta ler do arquivo local (PC).
+    Função Híbrida:
+    1. Verifica se existe 'credentials.json' (Uso Local no PC).
+    2. Se não existir, tenta ler de st.secrets (Uso na Nuvem).
     """
     try:
-        # TENTA LER DOS SEGREDOS (Para quando estiver na Nuvem)
-        # O Streamlit guarda segredos num dicionário chamado st.secrets
-        if "gcp_service_account" in st.secrets:
+        # ESTRATÉGIA 1: Modo Local (PC)
+        # Verifica fisicamente se o arquivo existe na pasta
+        if os.path.exists("credentials.json"):
+            creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
+        
+        # ESTRATÉGIA 2: Modo Nuvem (Streamlit Cloud)
+        # Se o arquivo não existe, assumimos que estamos na nuvem e buscamos no cofre
+        else:
+            # Esse bloco só roda se não tiver o arquivo json, evitando o erro no seu PC
             creds_dict = st.secrets["gcp_service_account"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
-        
-        # TENTA LER DO ARQUIVO (Para quando você estiver rodando local no VS Code)
-        else:
-            creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
 
+        # Autentica e abre a planilha
         client = gspread.authorize(creds)
         sheet = client.open("FocusData_DB").sheet1 
         return sheet
+
     except Exception as e:
         st.error(f"Erro de conexão: {e}")
         return None
+
+# ... (O resto das funções carregar_dados e salvar_registro continuam iguais)
 
 def carregar_dados():
     """
