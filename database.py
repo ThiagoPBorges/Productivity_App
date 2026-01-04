@@ -2,9 +2,10 @@ import pandas as pd
 import streamlit as st
 import os
 import pygsheets
+import json
 
 
-def load_data():
+def get_worksheet():
     """
     Function:
     Check if 'credentials.json' exists (Local Use on PC).
@@ -15,22 +16,42 @@ def load_data():
         if os.path.exists("credentials.json"):
             credentials = pygsheets.authorize(service_file="credentials.json")
         else:
-            st.error("Erro finding credentials.json file")
-            return None
+            # O pygsheets pede uma string JSON, então convertemos o dicionário de secrets
+            if "gcp_service_account" in st.secrets:
+                service_account_info = st.secrets["gcp_service_account"]
+                json_creds = json.dumps(dict(service_account_info))
+                credentials = pygsheets.authorize(service_account_json=json_creds)
+            else:
+                st.error("Arquivo credentials.json não encontrado e Secrets não configurados.")
+                return None
 
         url = "https://docs.google.com/spreadsheets/d/1ADvnbbl6a3AzkguJ_Qeua3PoV0n0hxJgxrvDITsCa7k/edit?gid=0#gid=0"
         # Via my credentials, open my google sheets
-        file = credentials.open_by_url(url)
-        # Get my records by my name sheet
-        sheet = file.worksheet_by_title("database")
-        # Transforms my records into a dataframe
-        df = sheet.get_as_df()
+        worksheet = credentials.open_by_url(url)
 
-        return df
+        return worksheet
 
     except Exception as e:
         st.error(f"Conection error: {e}")
         return None
+
+def load_data():
+    '''
+    Conection usage for data load and tranform into a dataframe.
+    '''
+    sheet = get_worksheet()
+    
+    if sheet:
+        # Get my records by my name sheet
+        sheet = sheet.worksheet_by_title("database")
+        # Transforms my records into a dataframe
+        df = sheet.get_as_df()
+
+        if df.empty:
+             return pd.DataFrame(columns=["Date", "Category", "Notes", "Duration"])
+
+        return df
+    return pd.DataFrame()
 
 
 def save_record(date, category, notes, duration):
