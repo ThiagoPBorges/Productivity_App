@@ -1,73 +1,48 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import streamlit as st
 import os
-from google.oauth2 import service_account
+import pygsheets
 
-# --- CONFIGURATIONS ---
-SCOPE = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
 
-def connect_google_sheets():
+def load_data():
     """
-    Hybrid Function:
-    1. Check if 'credentials.json' exists (Local Use on PC)
-    2. If it doesn't exist, try reading from st.secrets (Cloud Usage)
+    Function:
+    Check if 'credentials.json' exists (Local Use on PC).
+    It connects to my Google Sheets file via the Google Cloud API.
+    Open and get all records of my database (file).
     """
     try:
-        # 1.
         if os.path.exists("credentials.json"):
-            creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
-        # 2.
+            credentials = pygsheets.authorize(service_file="credentials.json")
         else:
-            creds_dict = st.secrets["gcp_service_account"]
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+            st.error("Erro finding credentials.json file")
+            return None
 
-        # Authenticates and opens the spreadsheet
-        client = gspread.authorize(creds)
-        sheet = client.open("FocusData_DB").sheet1 
-        return sheet
+        url = "https://docs.google.com/spreadsheets/d/1ADvnbbl6a3AzkguJ_Qeua3PoV0n0hxJgxrvDITsCa7k/edit?gid=0#gid=0"
+        # Via my credentials, open my google sheets
+        file = credentials.open_by_url(url)
+        # Get my records by my name sheet
+        sheet = file.worksheet_by_title("database")
+        # Transforms my records into a dataframe
+        df = sheet.get_as_df()
+
+        return df
 
     except Exception as e:
-        st.error(f"Erro de conexão: {e}")
+        st.error(f"Conection error: {e}")
         return None
 
 
-def carregar_dados():
-    """
-    Read data from cloud and transform into a Pandas Dataframe
-    """
-    sheet = connect_google_sheets()
-    if sheet:
-        # Get all records as a dictionary list
-        dados = sheet.get_all_records()
-        
-        # If the spreadsheet is empty (Only the Header), returns empty DF with correct columns
-        if not dados:
-             return pd.DataFrame(columns=["Date", "Category", "Activity", "Duration", "Notes"])
-             
-        df = pd.DataFrame(dados)
-        
-        # Ensures the date is interpreted correctly
-        if 'Date' in df.columns:
-            df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
-            
-        return df
-    return pd.DataFrame()
-
-def salvar_registro(data, categoria, atividade, tempo, notas):
+def save_record(date, category, notes, duration):
     """
     Receive data and add a new row to the Google Sheets.
     """
-    sheet = connect_google_sheets()
-    if sheet:
+    df = load_data()
+    if df:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
-        linha = [str(data), categoria, atividade, tempo, notas]
+        row = [str(date), category, notes, duration]
         
         # The function append_now add a new row on the next available empty line
-        sheet.append_row(linha)
+        df.append_row(row)
         return True
     return False

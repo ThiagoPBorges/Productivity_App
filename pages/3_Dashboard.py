@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from database import carregar_dados
+from database import load_data
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -10,11 +10,11 @@ st.title("📊 Performance Dashboard")
 st.markdown("---")
 
 # --- Functions (Backend) ---
-with st.spinner("Carregando dados da nuvem..."): # Mostra um ícone de carregando
-    df = carregar_dados()
+with st.spinner("Loading data from cloud..."):
+    df = load_data()
 
 if df.empty:
-    st.warning("Nenhum dado encontrado no Google Sheets. Adicione o primeiro!")
+    st.warning("No data found in Google Sheets. Add the first one!")
     st.stop()
 
 

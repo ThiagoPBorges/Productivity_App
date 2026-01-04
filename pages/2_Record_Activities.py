@@ -2,29 +2,29 @@ import streamlit as st
 import pandas as pd
 import os
 from datetime import date
-from database import salvar_registro
-from database import carregar_dados
+from database import save_record
+from database import load_data
 
-df = carregar_dados()
+df = load_data()
 
 if df.empty:
-    st.warning("Nenhum dado encontrado no Google Sheets. Adicione o primeiro!")
+    st.warning("No data found in Google Sheets. Add the first one!")
     st.stop()
 
 
 st.set_page_config(
-    page_title="Register",
+    page_title="Records",
     page_icon="📝",
     layout="centered"
 )
 
-st.title("📝 Register")
+st.title("📝 Records")
 st.markdown("---")
 
 
 # --- INPUT FORM ---
 with st.form("form_register"):
-    st.subheader("📝 New registration")
+    st.subheader("📝 New record")
 
     # Organizing them into columns to make them visual.
     col1, col2 = st.columns(2)
@@ -35,21 +35,19 @@ with st.form("form_register"):
 
     with col2:
         time = st.number_input("Time Spent (minutes)", min_value=0, step=5)
-        activity = st.text_input("Detail of the activity")
-    notes = st.text_input("Observation / Insights", placeholder= "What you learn today?")
+        notes = st.text_input("Detail of the activity")
 
     # Send button
     submitted = st.form_submit_button("💾 Save Register")
 
 # --- LOGIC OF SAVE ---
 if submitted:
-    # Chama a função que criamos no database.py
-    sucesso = salvar_registro(register_date, category, activity, time, notes)
+    save = save_record(register_date, category, notes, time)
     
-    if sucesso:
-        st.success("✅ Registro salvo no Google Sheets com sucesso!")
-        st.balloons() # Um efeito visual de comemoração
+    if save:
+        st.success("✅ Record saved successfully in Database!")
+        st.balloons() # Visual efect after save
     else:
-        st.error("❌ Erro ao salvar. Verifique sua conexão.")
+        st.error("❌ Error saving record in Database.")
 
 st.dataframe(df)
