@@ -72,3 +72,20 @@ def save_record(date, category, notes, duration):
         sheet.append_table([row], start='A1', dimension='ROWS', overwrite=False)
         return True
     return False
+
+def update_record(row_index,date, category, notes, duration):
+    """
+    Update a record based on the pandas index
+    """
+    sheet = get_worksheet()
+
+    if sheet:
+
+        google_row_number = row_index + 2
+        # Convert date to string (YYYY-MM-DD) for google sheets understand
+        row_data = [str(date), category, notes, duration]
+
+
+        sheet.update_row(index=google_row_number, values=row_data)
+        return True
+    return False

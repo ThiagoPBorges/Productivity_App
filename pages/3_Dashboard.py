@@ -9,6 +9,22 @@ st.title("📊 Performance Dashboard")
 
 st.markdown("---")
 
+df= get_df()
+
+
+cl1,cl2,cl3 = st.columns(3)
+
+with cl1:
+
+    goal_study = 60
+    performed_study = df[df['Category'] == 'Studies']['Duration'].sum()
+    progress = goal_study / performed_study
+    st.write(f"Studies Goal: {int(progress*100)}%")
+    st.progress(min(progress, 1.0))
+
+
+st.markdown("---")
+
 # --- Functions (Backend) ---
 with st.spinner("Loading data from cloud..."):
     df = get_df()
