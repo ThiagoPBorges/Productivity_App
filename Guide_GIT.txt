@@ -1,0 +1,57 @@
+========================================================================
+GUIA DE VERSIONAMENTO - PROJETO FOCUS DATA
+"Como e Quando Commitar como um Profissional"
+========================================================================
+
+QUANDO DAR UM COMMIT?
+Não faça commit a cada linha salva, nem espere terminar o projeto todo.
+A regra de ouro é: "Unidade Lógica de Trabalho".
+
+1. Funcionalidade Nova (Feature):
+   - Ex: Terminei de criar o botão na tela.
+   - Ex: O script agora consegue criar o arquivo Excel se ele não existir.
+
+2. Correção de Erro (Fix):
+   - Ex: Arrumei o bug que travava quando digitava letras no campo de hora.
+
+3. Refatoração (Refactor):
+   - Ex: O código funciona igual, mas limpei variáveis inúteis e organizei em funções.
+
+4. Fim do Dia de Trabalho:
+   - Nunca vá dormir com código importante apenas na sua máquina local.
+
+------------------------------------------------------------------------
+
+O QUE ESCREVER NA MENSAGEM? (Padrão Conventional Commits)
+Use prefixos para facilitar a leitura. Escreva no imperativo (como uma ordem).
+
+- feat: ... (Para novas funcionalidades)
+  Ex: "feat: adiciona input de data na barra lateral"
+
+- fix: ... (Para correção de bugs)
+  Ex: "fix: corrige erro de cálculo na soma das horas"
+
+- docs: ... (Para mudanças apenas em documentação)
+  Ex: "docs: atualiza instruções no README"
+
+- style: ... (Formatação, pontos e vírgulas, sem mudar lógica)
+  Ex: "style: ajusta indentação do código"
+
+- refactor: ... (Melhoria de código sem mudar funcionalidade)
+  Ex: "refactor: simplifica função de salvar no excel"
+
+------------------------------------------------------------------------
+
+O FLUXO DE TRABALHO DIÁRIO
+
+1. Antes de começar (se mudar de PC):
+   git pull origin main
+
+2. Trabalhou, criou, salvou?
+   git status      (Para ver o que mudou)
+   git add .       (Para preparar tudo)
+   git commit -m "tipo: mensagem clara"
+
+3. Para enviar para a nuvem:
+   git push
+========================================================================
