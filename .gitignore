@@ -8,5 +8,8 @@ Thumbs.db
 
 *.xlsx
 *.txt
-*.toml
 *.csv
+
+# Ignorar credenciais de segurança
+credentials.json
+.streamlit/secrets.toml

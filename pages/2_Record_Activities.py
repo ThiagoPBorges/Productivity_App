@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 from datetime import date
+from database import salvar_registro
 
 st.set_page_config(
     page_title="Register",
@@ -11,29 +12,6 @@ st.set_page_config(
 
 st.title("📝 Register")
 st.markdown("---")
-
-# --- Functions (Backend) ---
-def load_data ():
-    filename = 'productivity_database.csv'
-
-    # If not exist create
-    if not os.path.exists(filename):
-        df = pd.DataFrame(columns=["Date", "Category", "Activity", "Duration", "Notes"])
-        # Save the physical file
-        df.to_csv(filename, index=False)
-        return df
-    else:
-        # If exist try read
-        try:
-            df = pd.read_csv(filename)
-            # Ensures that the Date column is interpreted as a date.
-            df['Date'] = pd.to_datetime(df['Date']).dt.date
-            return df
-        except Exception as e:
-            st.error(f"Error reading Excel file: {e}")
-            return pd.DataFrame() # Returns empty to not crashing the app
-
-df = load_data()
 
 
 # --- INPUT FORM ---
@@ -57,25 +35,11 @@ with st.form("form_register"):
 
 # --- LOGIC OF SAVE ---
 if submitted:
-    # Create a new row of data
-    new_row = pd.DataFrame({
-        "Date": [register_date],
-        "Category": [category],
-        "Activity": [activity],
-        "Duration": [time],
-        "Notes": [notes]
-    })
+    # Chama a função que criamos no database.py
+    sucesso = salvar_registro(register_date, category, activity, time, notes)
     
-    # Add in exist dataframe
-    df = pd.concat([df, new_row], ignore_index=True)
-
-    try:
-        df.to_csv("productivity_database.csv", index=False)
-        st.success("Register saved successfully!")
-        # Rerun forces the page to reload to display the updated table
-        st.rerun()
-    except PermissionError:
-            st.error("⚠️ ERROR: Close the Excel file and try again!")
-
-st.subheader("Visualization of all registers", divider="grey")
-st.dataframe(df)
+    if sucesso:
+        st.success("✅ Registro salvo no Google Sheets com sucesso!")
+        st.balloons() # Um efeito visual de comemoração
+    else:
+        st.error("❌ Erro ao salvar. Verifique sua conexão.")

@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+from database import carregar_dados
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -9,42 +10,30 @@ st.title("📊 Performance Dashboard")
 st.markdown("---")
 
 # --- Functions (Backend) ---
-def load_data ():
-    filename = 'productivity_database.csv'
-
-    # If not exist create
-    if not os.path.exists(filename):
-        df = pd.DataFrame(columns=["Date", "Category", "Activity", "Duration", "Notes"])
-        # Save the physical file
-        df.to_csv(filename, index=False)
-        return df
-    else:
-        # If exist try read
-        try:
-            df = pd.read_csv(filename)
-            # Ensures that the Date column is interpreted as a date.
-            df['Date'] = pd.to_datetime(df['Date']).dt.date
-            return df
-        except Exception as e:
-            st.error(f"Error reading Excel file: {e}")
-            return pd.DataFrame() # Returns empty to not crashing the app
-
-df = load_data()
+with st.spinner("Carregando dados da nuvem..."): # Mostra um ícone de carregando
+    df = carregar_dados()
 
 if df.empty:
-    st.info("No record found... Your excel file has been create and is ready to use")
+    st.warning("Nenhum dado encontrado no Google Sheets. Adicione o primeiro!")
     st.stop()
+
+
+df["Date"] = pd.to_datetime(df["Date"])
+df["Duration"] = pd.to_numeric(df["Duration"], errors='coerce')
+df["Duration"] = df["Duration"].fillna(0).astype(int)
 
 
 # --- SIDEBAR & FILTERS ---
 st.sidebar.header("Filters")
 
-# Create a lista of options for categories
+# Create a option list for categories
 categories_list = ["General"] + list(df["Category"].unique())
 # Create a selection box on the sidebar
 selected_category = st.sidebar.selectbox("Category", categories_list)
 if selected_category != "General":
     df = df[df["Category"] == selected_category]
+
+
 
 
 # --- METRICS & KPI's ---
@@ -58,7 +47,11 @@ with c1:
 with c2:
     st.metric("Total Hours", value=f"{total_hours:.1f} h")
 with c3:
-    st.metric("Mean per register", value=f"{total_hours/total_registers:.1f} h")
+    if total_registers > 0:
+        media = total_hours / total_registers
+    else:
+        media = 0
+    st.metric("Mean per register", value=f"{media:.1f} h")
 
 data_groups_graphic = df.groupby("Category")['Duration'].sum()
 if df.shape[0] > 0:
