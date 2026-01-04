@@ -32,7 +32,7 @@ def load_data ():
 df = load_data()
 
 if df.empty:
-    st.info("No record found. Your excel file has been create and is ready to use")
+    st.info("No record found... Your excel file has been create and is ready to use")
     st.stop()
 
 
