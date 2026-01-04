@@ -76,3 +76,6 @@ if submitted:
         st.rerun()
     except PermissionError:
             st.error("⚠️ ERROR: Close the Excel file and try again!")
+
+st.subheader("Visualization of all registers", divider="grey")
+st.dataframe(df)
