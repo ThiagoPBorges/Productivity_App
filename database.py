@@ -3,33 +3,30 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import streamlit as st
 import os
+from google.oauth2 import service_account
 
-# --- CONFIGURAÇÃO ---
+# --- CONFIGURATIONS ---
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-def conectar_google_sheets():
+def connect_google_sheets():
     """
-    Função Híbrida:
-    1. Verifica se existe 'credentials.json' (Uso Local no PC).
-    2. Se não existir, tenta ler de st.secrets (Uso na Nuvem).
+    Hybrid Function:
+    1. Check if 'credentials.json' exists (Local Use on PC)
+    2. If it doesn't exist, try reading from st.secrets (Cloud Usage)
     """
     try:
-        # ESTRATÉGIA 1: Modo Local (PC)
-        # Verifica fisicamente se o arquivo existe na pasta
+        # 1.
         if os.path.exists("credentials.json"):
             creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
-        
-        # ESTRATÉGIA 2: Modo Nuvem (Streamlit Cloud)
-        # Se o arquivo não existe, assumimos que estamos na nuvem e buscamos no cofre
+        # 2.
         else:
-            # Esse bloco só roda se não tiver o arquivo json, evitando o erro no seu PC
             creds_dict = st.secrets["gcp_service_account"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
 
-        # Autentica e abre a planilha
+        # Authenticates and opens the spreadsheet
         client = gspread.authorize(creds)
         sheet = client.open("FocusData_DB").sheet1 
         return sheet
@@ -38,24 +35,23 @@ def conectar_google_sheets():
         st.error(f"Erro de conexão: {e}")
         return None
 
-# ... (O resto das funções carregar_dados e salvar_registro continuam iguais)
 
 def carregar_dados():
     """
-    Lê os dados da nuvem e transforma em DataFrame do Pandas.
+    Read data from cloud and transform into a Pandas Dataframe
     """
-    sheet = conectar_google_sheets()
+    sheet = connect_google_sheets()
     if sheet:
-        # Pega todos os registros como lista de dicionários
+        # Get all records as a dictionary list
         dados = sheet.get_all_records()
         
-        # Se a planilha estiver vazia (só cabeçalho), retorna DF vazio com colunas certas
+        # If the spreadsheet is empty (Only the Header), returns empty DF with correct columns
         if not dados:
              return pd.DataFrame(columns=["Date", "Category", "Activity", "Duration", "Notes"])
              
         df = pd.DataFrame(dados)
         
-        # Garante que a data seja interpretada corretamente
+        # Ensures the date is interpreted correctly
         if 'Date' in df.columns:
             df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
             
@@ -64,15 +60,14 @@ def carregar_dados():
 
 def salvar_registro(data, categoria, atividade, tempo, notas):
     """
-    Recebe os dados e adiciona uma nova linha lá no Google Sheets.
+    Receive data and add a new row to the Google Sheets.
     """
-    sheet = conectar_google_sheets()
+    sheet = connect_google_sheets()
     if sheet:
-        # O gspread espera os dados como uma lista simples: [col1, col2, col3...]
-        # Convertemos a data para string (YYYY-MM-DD) para o Sheets entender
+        # Convert date to string (YYYY-MM-DD) for google sheets understand
         linha = [str(data), categoria, atividade, tempo, notas]
         
-        # O append_row adiciona na primeira linha vazia disponível
+        # The function append_now add a new row on the next available empty line
         sheet.append_row(linha)
         return True
     return False
