@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from database import load_data
+from database import get_df
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -11,7 +11,7 @@ st.markdown("---")
 
 # --- Functions (Backend) ---
 with st.spinner("Loading data from cloud..."):
-    df = load_data()
+    df = get_df()
 
 if df.empty:
     st.warning("No data found in Google Sheets. Add the first one!")

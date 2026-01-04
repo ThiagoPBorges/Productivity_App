@@ -3,13 +3,7 @@ import pandas as pd
 import os
 from datetime import date
 from database import save_record
-from database import load_data
-
-df = load_data()
-
-if df.empty:
-    st.warning("No data found in Google Sheets. Add the first one!")
-    st.stop()
+from database import get_df
 
 
 st.set_page_config(
@@ -49,5 +43,12 @@ if submitted:
         st.balloons() # Visual efect after save
     else:
         st.error("❌ Error saving record in Database.")
+
+
+df = get_df()
+
+if df.empty:
+    st.warning("No data found in Google Sheets. Add the first one!")
+    st.stop()
 
 st.dataframe(df)

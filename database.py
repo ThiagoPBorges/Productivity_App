@@ -13,12 +13,15 @@ def get_worksheet():
     Open and get all records of my database (file).
     """
     try:
+        # STRATEGY 1: (Local Use on PC)
         if os.path.exists("credentials.json"):
             credentials = pygsheets.authorize(service_file="credentials.json")
+        # STRATEGY 1: (Cloud Mode - Streamlit CLoud) - Use st.secrets
         else:
-            # O pygsheets pede uma string JSON, então convertemos o dicionário de secrets
+            # Pygsheets needs a JSON string, so we converted the secrets dictionary.
             if "gcp_service_account" in st.secrets:
                 service_account_info = st.secrets["gcp_service_account"]
+                # Convert the dictionary back to a JSON text
                 json_creds = json.dumps(dict(service_account_info))
                 credentials = pygsheets.authorize(service_account_json=json_creds)
             else:
@@ -26,8 +29,11 @@ def get_worksheet():
                 return None
 
         url = "https://docs.google.com/spreadsheets/d/1ADvnbbl6a3AzkguJ_Qeua3PoV0n0hxJgxrvDITsCa7k/edit?gid=0#gid=0"
-        # Via my credentials, open my google sheets
-        worksheet = credentials.open_by_url(url)
+
+        # Via my credentials, get my google sheets
+        gc = credentials.open_by_url(url)
+
+        worksheet = gc.worksheet_by_title("database")
 
         return worksheet
 
@@ -35,15 +41,13 @@ def get_worksheet():
         st.error(f"Conection error: {e}")
         return None
 
-def load_data():
+def get_df():
     '''
     Conection usage for data load and tranform into a dataframe.
     '''
     sheet = get_worksheet()
     
     if sheet:
-        # Get my records by my name sheet
-        sheet = sheet.worksheet_by_title("database")
         # Transforms my records into a dataframe
         df = sheet.get_as_df()
 
@@ -51,19 +55,20 @@ def load_data():
              return pd.DataFrame(columns=["Date", "Category", "Notes", "Duration"])
 
         return df
-    return pd.DataFrame()
+    return None
 
 
 def save_record(date, category, notes, duration):
     """
     Receive data and add a new row to the Google Sheets.
     """
-    df = load_data()
-    if df:
+    sheet = get_worksheet()
+
+    if sheet:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
         row = [str(date), category, notes, duration]
         
-        # The function append_now add a new row on the next available empty line
-        df.append_row(row)
+        # The function gets the list of [row], and inserts it without overwriting. This means it will paste into the next blank row.
+        sheet.append_table([row], start='A1', dimension='ROWS', overwrite=False)
         return True
     return False
