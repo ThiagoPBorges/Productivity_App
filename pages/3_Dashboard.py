@@ -11,20 +11,6 @@ st.markdown("---")
 
 df= get_df()
 
-
-cl1,cl2,cl3 = st.columns(3)
-
-with cl1:
-
-    goal_study = 60
-    performed_study = df[df['Category'] == 'Studies']['Duration'].sum()
-    progress = goal_study / performed_study
-    st.write(f"Studies Goal: {int(progress*100)}%")
-    st.progress(min(progress, 1.0))
-
-
-st.markdown("---")
-
 # --- Functions (Backend) ---
 with st.spinner("Loading data from cloud..."):
     df = get_df()
@@ -50,6 +36,33 @@ if selected_category != "General":
     df = df[df["Category"] == selected_category]
 
 
+cl1,cl2,cl3 = st.columns(3)
+
+
+with cl1:
+    with st.container(border=True):
+        goal_study = 60
+        performed_study = df[df['Category'] == 'Studies']['Duration'].sum()
+        progress = performed_study/goal_study
+        st.write(f"Studies Goal: {int(progress*100)}%")
+        st.progress(min(progress, 1.0))
+with cl2:
+    with st.container(border=True):
+        goal_english = 60
+        performed_english = df[df['Category'] == 'English']['Duration'].sum()
+        progress = performed_english/goal_english
+        st.write(f"English Goal: {int(progress*100)}%")
+        st.progress(min(progress, 1.0))
+with cl3:
+    with st.container(border=True):
+        goal_read = 60
+        performed_read = df[df['Category'] == 'Read']['Duration'].sum()
+        progress = performed_read/goal_read
+        st.write(f"Reading Goal: {int(progress*100)}%")
+        st.progress(min(progress, 1.0))
+
+
+st.markdown("---")
 
 
 # --- METRICS & KPI's ---
