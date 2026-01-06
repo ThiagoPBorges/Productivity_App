@@ -5,6 +5,7 @@ from datetime import date
 from database import get_df
 from database import save_record
 from database import update_record
+import time
 
 
 st.set_page_config(
@@ -129,11 +130,12 @@ if st.session_state["show_editor"]:
 
             i = 0
 
-
-
             for index_pandas, alterations in changes.items():
                 i += 1
                 progress.progress(i/total_changes)
+                status_txt.text(f"Salvando {i}/{total_changes}... (Aguarde o Google)")
+
+                time.sleep(1.5)
 
                 complete_row = df_edited.loc[index_pandas]
 
@@ -163,7 +165,7 @@ if st.session_state["show_editor"]:
             if erros == 0:
                 st.success("✅ Todas as alterações foram salvas!")
                 import time
-                time.sleep(1) # Espera 1 segundo para você ler a mensagem
+                time.sleep(1)
                 st.cache_data.clear()
                 st.rerun()
             else:
