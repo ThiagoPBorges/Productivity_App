@@ -4,7 +4,7 @@ import os
 import pygsheets
 import json
 
-
+@st.cache_resource
 def get_worksheet():
     """
     Function:
@@ -36,6 +36,11 @@ def get_worksheet():
         worksheet = gc.worksheet_by_title("database")
 
         return worksheet
+    
+    except Exception as e:
+        # Se der erro, não fazemos cache para tentar conectar de novo na próxima
+        st.error(f"Erro de Conexão: {e}")
+        return None
 
     except Exception as e:
         st.error(f"Conection error: {e}")
@@ -80,12 +85,28 @@ def update_record(row_index,date, category, notes, duration):
     sheet = get_worksheet()
 
     if sheet:
-
-        google_row_number = row_index + 2
-        # Convert date to string (YYYY-MM-DD) for google sheets understand
-        row_data = [str(date), category, notes, duration]
-
-
-        sheet.update_row(index=google_row_number, values=row_data)
-        return True
+        try:
+            # 1. Calcula a linha real no Excel
+            # (Pandas começa em 0, Excel começa em 1 + 1 do cabeçalho = +2)
+            google_row_number = row_index + 2
+            
+            # 2. Prepara os dados
+            # A ordem da lista deve ser IGUAL às colunas da planilha:
+            # Coluna A (Date), B (Category), C (Notes), D (Duration)
+            row_data = [str(date), str(category), str(notes), int(duration)]
+            
+            # 3. Define o endereço exato (Range)
+            # Ex: Se linha for 10, o range será "A10:D10"
+            range_address = f"A{google_row_number}:D{google_row_number}"
+            
+            # 4. Envia o comando de atualização por Range
+            # values deve ser uma lista de listas -> [[dados]]
+            sheet.update_values(crange=range_address, values=[row_data])
+            
+            return True
+            
+        except Exception as e:
+            st.error(f"Erro ao atualizar linha {google_row_number}: {e}")
+            return False
+                
     return False
