@@ -1,32 +1,41 @@
 import streamlit as st
 import pandas as pd
-import os
 from datetime import date
 from database import get_df
 from database import save_record
 from database import update_record
 import time
 
-
+# Set page config
 st.set_page_config(
     page_title="Records",
     page_icon="📝",
     layout="wide"
 )
 
+# Set default state to hide the dataframe editor
 if "show_editor" not in st.session_state:
     st.session_state["show_editor"] = False
 
+# Main title of page
 st.title("📝 Records")
 st.markdown("---")
 
+# Variable to get df
 df = get_df()
 
+# ------- Settings to adjust Visualization & Data Settings -------
 if not df.empty:
     df["Date"] = pd.to_datetime(df["Date"], errors='coerce').dt.date
     df["Notes"] = df["Notes"].fillna("").astype(str)
+    df["Duration"] = df["Duration"].fillna(0).astype(int)
 
-# --- SIDEBAR & FILTERS ---
+if df.empty:
+    st.warning("No data found in Google Sheets. Add the first one!")
+    st.stop()
+
+
+# ----------------------- SIDEBAR & FILTERS -----------------------
 st.sidebar.header("Filters")
 
 # Create a option list for categories
@@ -36,12 +45,9 @@ selected_category = st.sidebar.selectbox("Category", categories_list)
 if selected_category != "General":
     df = df[df["Category"] == selected_category]
 
-if df.empty:
-    st.warning("No data found in Google Sheets. Add the first one!")
 
 
-
-# --- INPUT FORM ---
+# ----------------------- INPUT FORM -----------------------
 with st.form("form_register"):
     st.subheader("📝 New record")
 
@@ -63,13 +69,15 @@ with st.form("form_register"):
         # Send button
         submitted = st.form_submit_button("💾 Save Register")
     with c2:
-        # Editor button
+        # Editor button using the state to appear and hide editor mode
         editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
         editor_button_click = st.form_submit_button(editor_button)
         
+        # Change mode os state
         if editor_button_click:
             st.session_state["show_editor"] = not st.session_state["show_editor"]
             st.rerun()
+    # Use to refresh data
     with c3:
         if st.form_submit_button("🔄 Refresh Data"):
             st.cache_data.clear()
@@ -77,18 +85,18 @@ with st.form("form_register"):
     
 
 
-
-# --- LOGIC OF SAVE ---
+# ----------------------- LOGIC OF SAVE -----------------------
 if submitted:
     save = save_record(register_date, category, notes, duration)
     
     if save:
         st.success("✅ Record saved successfully in Database!")
-        st.balloons() # Visual efect after save
+        # Visual efect after save
+        st.balloons()
     else:
         st.error("❌ Error saving record in Database.")
 
-
+# If state of page on to edit, show the editor dataframe
 if st.session_state["show_editor"]:
     with st.container(border=True):
 
@@ -101,28 +109,26 @@ if st.session_state["show_editor"]:
                     num_rows="fixed",
                     key="editor_table",
                     column_config={
-                        # Configuração da Data (Já existia)
                         "Date": st.column_config.DateColumn(
                             "Date",
                             format="DD/MM/YYYY",
                             step=1,
                         ),
-                        # --- NOVO: FORÇAR NOTES A SER TEXTO ---
                         "Notes": st.column_config.TextColumn(
-                            "Notes",
-                            help="Detalhes da atividade (Texto ou Números)",
-                            default="", # Se criar nova linha, começa vazio
+                            "Notes"
                         ),
                     }
                 )
-
+        # Variable to store changes in the df
         changes = st.session_state["editor_table"]["edited_rows"]
 
+        # If there is change, show quantity of them
         if len(changes) > 0:
             st.warning(f"You have changed {len(changes)} record(s). Do you want to save?")
 
         if st.button("💾 Save changes"):
 
+            # Progress bar of progress
             progress = st.progress(0)
             status_txt = st.empty()
             total_changes = len(changes)
@@ -133,12 +139,13 @@ if st.session_state["show_editor"]:
             for index_pandas, alterations in changes.items():
                 i += 1
                 progress.progress(i/total_changes)
-                status_txt.text(f"Salvando {i}/{total_changes}... (Aguarde o Google)")
+                status_txt.text(f"Saving {i}/{total_changes}... (Wait for Google Sheets to update)")
 
                 time.sleep(1.5)
 
                 complete_row = df_edited.loc[index_pandas]
 
+                # Set data types
                 date_txt = str(complete_row["Date"])
                 category_txt = str(complete_row["Category"])
                 notes_txt = str(complete_row["Notes"]) if complete_row["Notes"] else ""
@@ -156,19 +163,18 @@ if st.session_state["show_editor"]:
                 )
                 if not register_data:
                     erros += 1
-                    st.error(f"❌ Falha ao salvar linha {index_pandas}. Tente novamente.")
+                    st.error(f"❌ Error to save row {index_pandas}. Try again later.")
             
-            # Finalização
-            progress.empty() # Some com a barra
+            progress.empty()
             status_txt.empty()
             
             if erros == 0:
-                st.success("✅ Todas as alterações foram salvas!")
+                st.success("✅ All records saved successfully!")
                 import time
                 time.sleep(1)
                 st.cache_data.clear()
                 st.rerun()
             else:
-                st.warning(f"⚠️ Processo finalizado com {erros} erro(s). O sistema não irá recarregar para você ver o erro.")
+                st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
 else:
     st.dataframe(df, use_container_width=True)

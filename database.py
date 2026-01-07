@@ -3,9 +3,10 @@ import streamlit as st
 import os
 import pygsheets
 import json
-import time
 
+# Use to reserve the local memory and to prevent the app from having to read code all the time.
 @st.cache_resource
+
 def get_worksheet():
     """
     Function:
@@ -26,7 +27,7 @@ def get_worksheet():
                 json_creds = json.dumps(dict(service_account_info))
                 credentials = pygsheets.authorize(service_account_json=json_creds)
             else:
-                st.error("Arquivo credentials.json não encontrado e Secrets não configurados.")
+                st.error("Credentials.json file not found and secrets not previous config.")
                 return None
 
         url = "https://docs.google.com/spreadsheets/d/1ADvnbbl6a3AzkguJ_Qeua3PoV0n0hxJgxrvDITsCa7k/edit?gid=0#gid=0"
@@ -34,17 +35,13 @@ def get_worksheet():
         # Via my credentials, get my google sheets
         gc = credentials.open_by_url(url)
 
+        # Get my database from specific sheet
         worksheet = gc.worksheet_by_title("database")
 
         return worksheet
     
     except Exception as e:
-        # Se der erro, não fazemos cache para tentar conectar de novo na próxima
         st.error(f"Erro de Conexão: {e}")
-        return None
-
-    except Exception as e:
-        st.error(f"Conection error: {e}")
         return None
 
 def get_df():
@@ -57,6 +54,7 @@ def get_df():
         # Transforms my records into a dataframe
         df = sheet.get_as_df()
 
+        # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
              return pd.DataFrame(columns=["Date", "Category", "Notes", "Duration"])
 
@@ -87,27 +85,24 @@ def update_record(row_index,date, category, notes, duration):
 
     if sheet:
         try:
-            # 1. Calcula a linha real no Excel
-            # (Pandas começa em 0, Excel começa em 1 + 1 do cabeçalho = +2)
+            # Calculate real row of excel
+            # (Pandas starts in 0, Excel starts in 1 + 1 from header = +2)
             google_row_number = row_index + 2
             
-            # 2. Prepara os dados
-            # A ordem da lista deve ser IGUAL às colunas da planilha:
-            # Coluna A (Date), B (Category), C (Notes), D (Duration)
+            # Prepare rows and your type of data (Exactly sequence)
             row_data = [str(date), str(category), str(notes), int(duration)]
             
-            # 3. Define o endereço exato (Range)
-            # Ex: Se linha for 10, o range será "A10:D10"
+            # Define the exact address (Range)
+            # Ex: If the line is 10, the range will be "A10:D10"
             range_address = f"A{google_row_number}:D{google_row_number}"
             
-            # 4. Envia o comando de atualização por Range
-            # values deve ser uma lista de listas -> [[dados]]
+            # Send the update command via range
             sheet.update_values(crange=range_address, values=[row_data])
             
             return True
             
         except Exception as e:
-            st.error(f"Erro ao atualizar linha {google_row_number}: {e}")
+            st.error(f"Error to update row {range_address}: {e}")
             return False
                 
     return False
