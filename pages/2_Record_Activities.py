@@ -21,6 +21,20 @@ if "show_editor" not in st.session_state:
 st.title("📝 Records")
 st.markdown("---")
 
+# Access control
+st.sidebar.header("🔐 Admin Area")
+input_pass = st.sidebar.text_input("Admin Password", type="password")
+
+# Verify if the password is right, the same of secrets on streamlit folder
+is_admin = False
+if "admin_password" in st.secrets:
+    if input_pass == st.secrets["admin_password"]:
+        is_admin = True
+        st.sidebar.success("Unlocked! 🔓")
+    elif input_pass:
+        st.sidebar.error("Wrong password 🔒")
+
+
 # Variable to get df
 df = get_df()
 
