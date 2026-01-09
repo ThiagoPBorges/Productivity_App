@@ -77,18 +77,22 @@ with st.form("form_register"):
         notes = st.text_input("Detail of the activity")
 
     # Organizing them into columns to make them visual.
-    c1, c2, c3, c4 = st.columns([1,1,1,6])
+    c1, c2, c3, c4 = st.columns([1.3,1.3,1.3,6.2])
 
     with c1:
             if is_admin:
                 submitted = st.form_submit_button("💾 Save Register")
             else:
-                submitted = st.form_submit_button("💾 Save (Read Only)", disabled=True)
-                st.caption("🔒 Login to save")
+                submitted = st.form_submit_button("💾 Save Register", disabled=True)
+                st.caption("🔒 Login to edit records.")
     with c2:
-        # Editor button using the state to appear and hide editor mode
-        editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
-        editor_button_click = st.form_submit_button(editor_button)
+        if is_admin:
+            # Editor button using the state to appear and hide editor mode
+            editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
+            editor_button_click = st.form_submit_button(editor_button)
+        else:
+            editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
+            editor_button_click = st.form_submit_button(editor_button, disabled=True)
         
         # Change mode os state
         if editor_button_click:
@@ -96,9 +100,12 @@ with st.form("form_register"):
             st.rerun()
     # Use to refresh data
     with c3:
-        if st.form_submit_button("🔄 Refresh Data"):
-            st.cache_data.clear()
-            st.rerun()
+        if is_admin:
+            if st.form_submit_button("🔄 Refresh Data"):
+                st.cache_data.clear()
+                st.rerun()
+        else:
+            st.form_submit_button("🔄 Refresh Data", disabled=True)
     
 
 
@@ -195,4 +202,5 @@ if st.session_state["show_editor"]:
                     st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
         else:
             st.warning("🔒 You are in View Mode. Login to edit records.")
-            st.dataframe(df, use_container_width=True)
+
+st.dataframe(df, use_container_width=True)
