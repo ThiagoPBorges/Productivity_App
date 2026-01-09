@@ -28,7 +28,7 @@ input_pass = st.sidebar.text_input("Admin Password", type="password")
 # Verify if the password is right, the same of secrets on streamlit folder
 is_admin = False
 if "admin_password" in st.secrets:
-    if input_pass == st.secrets["admin_password"]:
+    if input_pass.strip() == st.secrets["admin_password"]:
         is_admin = True
         st.sidebar.success("Unlocked! 🔓")
     elif input_pass:
