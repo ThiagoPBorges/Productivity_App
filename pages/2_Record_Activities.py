@@ -80,8 +80,11 @@ with st.form("form_register"):
     c1, c2, c3, c4 = st.columns([1,1,1,6])
 
     with c1:
-        # Send button
-        submitted = st.form_submit_button("💾 Save Register")
+            if is_admin:
+                submitted = st.form_submit_button("💾 Save Register")
+            else:
+                submitted = st.form_submit_button("💾 Save (Read Only)", disabled=True)
+                st.caption("🔒 Login to save")
     with c2:
         # Editor button using the state to appear and hide editor mode
         editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
@@ -100,7 +103,7 @@ with st.form("form_register"):
 
 
 # ----------------------- LOGIC OF SAVE -----------------------
-if submitted:
+if is_admin and submitted:
     save = save_record(register_date, category, notes, duration)
     
     if save:
@@ -113,82 +116,83 @@ if submitted:
 # If state of page on to edit, show the editor dataframe
 if st.session_state["show_editor"]:
     with st.container(border=True):
+        if is_admin:
+            st.subheader("✏️ Editor of records")
+            st.caption("Edit directly in table below and press Enter.")
 
-        st.subheader("✏️ Editor of records")
-        st.caption("Edit directly in table below and press Enter.")
+            df_edited = st.data_editor(
+                        df.sort_values(by='Date', ascending=False),
+                        width="stretch",
+                        num_rows="fixed",
+                        key="editor_table",
+                        column_config={
+                            "Date": st.column_config.DateColumn(
+                                "Date",
+                                format="DD/MM/YYYY",
+                                step=1,
+                            ),
+                            "Notes": st.column_config.TextColumn(
+                                "Notes"
+                            ),
+                        }
+                    )
+            # Variable to store changes in the df
+            changes = st.session_state["editor_table"]["edited_rows"]
 
-        df_edited = st.data_editor(
-                    df.sort_values(by='Date', ascending=False),
-                    width="stretch",
-                    num_rows="fixed",
-                    key="editor_table",
-                    column_config={
-                        "Date": st.column_config.DateColumn(
-                            "Date",
-                            format="DD/MM/YYYY",
-                            step=1,
-                        ),
-                        "Notes": st.column_config.TextColumn(
-                            "Notes"
-                        ),
-                    }
-                )
-        # Variable to store changes in the df
-        changes = st.session_state["editor_table"]["edited_rows"]
+            # If there is change, show quantity of them
+            if len(changes) > 0:
+                st.warning(f"You have changed {len(changes)} record(s). Do you want to save?")
 
-        # If there is change, show quantity of them
-        if len(changes) > 0:
-            st.warning(f"You have changed {len(changes)} record(s). Do you want to save?")
+            if st.button("💾 Save changes"):
 
-        if st.button("💾 Save changes"):
+                # Progress bar of progress
+                progress = st.progress(0)
+                status_txt = st.empty()
+                total_changes = len(changes)
+                erros = 0
 
-            # Progress bar of progress
-            progress = st.progress(0)
-            status_txt = st.empty()
-            total_changes = len(changes)
-            erros = 0
+                i = 0
 
-            i = 0
+                for index_pandas, alterations in changes.items():
+                    i += 1
+                    progress.progress(i/total_changes)
+                    status_txt.text(f"Saving {i}/{total_changes}... (Wait for Google Sheets to update)")
 
-            for index_pandas, alterations in changes.items():
-                i += 1
-                progress.progress(i/total_changes)
-                status_txt.text(f"Saving {i}/{total_changes}... (Wait for Google Sheets to update)")
+                    time.sleep(1.5)
 
-                time.sleep(1.5)
+                    complete_row = df_edited.loc[index_pandas]
 
-                complete_row = df_edited.loc[index_pandas]
+                    # Set data types
+                    date_txt = str(complete_row["Date"])
+                    category_txt = str(complete_row["Category"])
+                    notes_txt = str(complete_row["Notes"]) if complete_row["Notes"] else ""
+                    try:
+                        dur_int = int(complete_row["Duration"])
+                    except:
+                        dur_int = 0
 
-                # Set data types
-                date_txt = str(complete_row["Date"])
-                category_txt = str(complete_row["Category"])
-                notes_txt = str(complete_row["Notes"]) if complete_row["Notes"] else ""
-                try:
-                    dur_int = int(complete_row["Duration"])
-                except:
-                    dur_int = 0
-
-                register_data = update_record(
-                    row_index=index_pandas,
-                    date=date_txt,
-                    category=category_txt,
-                    notes=notes_txt,
-                    duration=dur_int
-                )
-                if not register_data:
-                    erros += 1
-                    st.error(f"❌ Error to save row {index_pandas}. Try again later.")
-            
-            progress.empty()
-            status_txt.empty()
-            
-            if erros == 0:
-                st.success("✅ All records saved successfully!")
-                import time
-                time.sleep(1)
-                st.cache_data.clear()
-                st.rerun()
-            else:
-                st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
-else:
-    st.dataframe(df, use_container_width=True)
+                    register_data = update_record(
+                        row_index=index_pandas,
+                        date=date_txt,
+                        category=category_txt,
+                        notes=notes_txt,
+                        duration=dur_int
+                    )
+                    if not register_data:
+                        erros += 1
+                        st.error(f"❌ Error to save row {index_pandas}. Try again later.")
+                
+                progress.empty()
+                status_txt.empty()
+                
+                if erros == 0:
+                    st.success("✅ All records saved successfully!")
+                    import time
+                    time.sleep(1)
+                    st.cache_data.clear()
+                    st.rerun()
+                else:
+                    st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
+        else:
+            st.warning("🔒 You are in View Mode. Login to edit records.")
+            st.dataframe(df, use_container_width=True)
