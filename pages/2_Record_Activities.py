@@ -115,7 +115,7 @@ if is_admin and submitted:
 
     time_now = datetime.now().strftime("%H:%M:%S")
 
-    save = save_record(register_date, category, notes, duration)
+    save = save_record(register_date, time_now, category, notes, duration)
     
     if save:
         st.success("✅ Record saved successfully in Database!")
