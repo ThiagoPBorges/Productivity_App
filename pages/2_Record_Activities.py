@@ -153,7 +153,7 @@ if st.session_state["show_editor"]:
                         key="editor_table",
                         column_config={
                             "ID_Google": st.column_config.NumberColumn(
-                                "Excel Row", disabled=True, help="Linha original do Excel"
+                                "ID_Google", disabled=True, help="Linha original do Excel"
                             ),
                             "Date": st.column_config.DateColumn(
                                 "Date", format="DD/MM/YYYY", step=1
