@@ -139,6 +139,12 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
+                            # CONFIGURAÇÃO DE SEGURANÇA: Mostra o ID mas bloqueia edição
+                            "ID_Google": st.column_config.NumberColumn(
+                                "Excel Row",
+                                disabled=True, # Você vê, mas não mexe, para garantir integridade
+                                help="Número da linha original no Google Sheets"
+                            ),
                             "Date": st.column_config.DateColumn(
                                 "Date",
                                 format="DD/MM/YYYY",
@@ -150,7 +156,8 @@ if st.session_state["show_editor"]:
                             "Notes": st.column_config.TextColumn(
                                 "Notes"
                             ),
-                        }
+                        },
+                        hide_index=True
                     )
             # Variable to store changes in the df
             changes = st.session_state["editor_table"]["edited_rows"]
@@ -179,6 +186,7 @@ if st.session_state["show_editor"]:
                     complete_row = df_edited.loc[index_pandas]
 
                     # Set data types
+                    real_id = int(complete_row["ID_Google"])
                     date_txt = str(complete_row["Date"])
                     category_txt = str(complete_row["Category"])
                     notes_txt = str(complete_row["Notes"]) if complete_row["Notes"] else ""
@@ -188,7 +196,7 @@ if st.session_state["show_editor"]:
                         dur_int = 0
 
                     register_data = update_record(
-                        row_index=index_pandas,
+                        row_index=real_id,
                         date=date_txt,
                         time=complete_row["Time"],
                         category=category_txt,
@@ -212,5 +220,7 @@ if st.session_state["show_editor"]:
                     st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
         else:
             st.warning("🔒 You are in View Mode. Login to edit records.")
+            st.dataframe(df, use_container_width=True)
 
-st.dataframe(df, use_container_width=True)
+if not st.session_state["show_editor"]:
+    st.dataframe(df, use_container_width=True)

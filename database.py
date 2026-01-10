@@ -59,12 +59,14 @@ def get_df():
         # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
              return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration"])
+        
+        df['ID_Google'] = df.index + 2
 
         return df
     return None
 
 
-def save_record(date, time, category, notes, duration):
+def save_record(id , date, time, category, notes, duration):
     """
     Receive data and add a new row to the Google Sheets.
     """
@@ -72,14 +74,14 @@ def save_record(date, time, category, notes, duration):
 
     if sheet:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
-        row = [str(date), time, category, notes, duration]
+        row = [id, str(date), time, category, notes, duration]
         
         # The function gets the list of [row], and inserts it without overwriting. This means it will paste into the next blank row.
         sheet.append_table([row], start='A1', dimension='ROWS', overwrite=False)
         return True
     return False
 
-def update_record(row_index,date, time, category, notes, duration):
+def update_record(real_row_id,date, time, category, notes, duration):
     """
     Update a record based on the pandas index
     """
@@ -89,7 +91,7 @@ def update_record(row_index,date, time, category, notes, duration):
         try:
             # Calculate real row of excel
             # (Pandas starts in 0, Excel starts in 1 + 1 from header = +2)
-            google_row_number = row_index + 2
+            google_row_number = real_row_id
             
             # Prepare rows and your type of data (Exactly sequence)
             row_data = [str(date), str(time), str(category), str(notes), int(duration)]
