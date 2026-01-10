@@ -152,9 +152,8 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
-                            "ID_Google": st.column_config.NumberColumn(
-                                "ID_Google", disabled=True, help="Linha original do Excel"
-                            ),
+                            "ID_Google": None
+                            ,
                             "Date": st.column_config.DateColumn(
                                 "Date", format="DD/MM/YYYY", step=1
                             ),
@@ -228,4 +227,11 @@ if st.session_state["show_editor"]:
             st.dataframe(df, use_container_width=True)
 
 if not st.session_state["show_editor"]:
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df,
+                 use_container_width=True,
+                 hide_index=True,
+                 column_config={
+                     "ID_Google": None
+                 }
+                 
+                 )
