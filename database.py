@@ -66,7 +66,7 @@ def get_df():
     return None
 
 
-def save_record(id , date, time, category, notes, duration):
+def save_record(date, time, category, notes, duration):
     """
     Receive data and add a new row to the Google Sheets.
     """
@@ -74,7 +74,7 @@ def save_record(id , date, time, category, notes, duration):
 
     if sheet:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
-        row = [id, str(date), time, category, notes, duration]
+        row = [str(date), time, category, notes, duration]
         
         # The function gets the list of [row], and inserts it without overwriting. This means it will paste into the next blank row.
         sheet.append_table([row], start='A1', dimension='ROWS', overwrite=False)
