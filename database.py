@@ -72,7 +72,7 @@ def save_record(date, time, category, notes, duration):
 
     if sheet:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
-        row = [str(date), time, category, notes, duration]
+        row = [date, time, category, notes, duration]
         
         # The function gets the list of [row], and inserts it without overwriting. This means it will paste into the next blank row.
         sheet.append_table([row], start='A1', dimension='ROWS', overwrite=False)
@@ -92,7 +92,7 @@ def update_record(real_row_id,date, time, category, notes, duration):
             google_row_number = real_row_id
             
             # Prepare rows and your type of data (Exactly sequence)
-            row_data = [str(date), time, category, notes, duration]
+            row_data = [date, time, category, notes, duration]
             
             # Define the exact address (Range)
             # Ex: If the line is 10, the range will be "A10:D10"

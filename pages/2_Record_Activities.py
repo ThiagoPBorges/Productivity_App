@@ -150,8 +150,7 @@ if st.session_state["show_editor"]:
                             "Notes": st.column_config.TextColumn(
                                 "Notes"
                             ),
-                        },
-                        hide_index=True
+                        }
                     )
             # Variable to store changes in the df
             changes = st.session_state["editor_table"]["edited_rows"]
