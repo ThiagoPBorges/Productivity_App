@@ -42,9 +42,17 @@ df = get_df()
 
 # ------- Settings to adjust Visualization & Data Settings -------
 if not df.empty:
-    df["Date"] = pd.to_datetime(df["Date"], errors='coerce').dt.date
+    df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
+    
+    df = df.dropna(subset=["Date"])
+
+    df["Date"] = df["Date"].dt.date
+    
     df["Notes"] = df["Notes"].fillna("").astype(str)
     df["Duration"] = df["Duration"].fillna(0).astype(int)
+    
+    if "ID_Google" in df.columns:
+        df["ID_Google"] = pd.to_numeric(df["ID_Google"], errors='coerce').fillna(0).astype(int)
 
 if df.empty:
     st.warning("No data found in Google Sheets. Add the first one!")
@@ -139,18 +147,16 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
+                            "ID_Google": st.column_config.NumberColumn(
+                                "Excel Row", disabled=True, help="Linha original do Excel"
+                            ),
                             "Date": st.column_config.DateColumn(
-                                "Date",
-                                format="DD/MM/YYYY",
-                                step=1,
+                                "Date", format="DD/MM/YYYY", step=1
                             ),
-                            "Time": st.column_config.DatetimeColumn(
-                                "Time"
-                            ),
-                            "Notes": st.column_config.TextColumn(
-                                "Notes"
-                            ),
-                        }
+                            "Time": st.column_config.TextColumn("Time"),
+                            "Notes": st.column_config.TextColumn("Notes"),
+                        },
+                        hide_index=True
                     )
             # Variable to store changes in the df
             changes = st.session_state["editor_table"]["edited_rows"]
@@ -178,6 +184,8 @@ if st.session_state["show_editor"]:
 
                     complete_row = df_edited.loc[index_pandas]
 
+                    real_id = int(complete_row["ID_Google"])
+
                     # Set data types
                     date_txt = str(complete_row["Date"])
                     category_txt = str(complete_row["Category"])
@@ -188,6 +196,7 @@ if st.session_state["show_editor"]:
                         dur_int = 0
 
                     register_data = update_record(
+                        real_row_id=real_id,
                         date=date_txt,
                         time=complete_row["Time"],
                         category=category_txt,
