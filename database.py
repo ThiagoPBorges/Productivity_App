@@ -75,7 +75,7 @@ def save_record(date, time, category, notes, duration):
         row = [str(date), time, category, notes, duration]
         
         # The function gets the list of [row], and inserts it without overwriting. This means it will paste into the next blank row.
-        sheet.append_table([row], start='A1', dimension='ROWS', overwrite=False)
+        sheet.append_table([row], start='A2', dimension='ROWS', overwrite=False)
         return True
     return False
 
