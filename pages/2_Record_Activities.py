@@ -196,7 +196,7 @@ if st.session_state["show_editor"]:
                         dur_int = 0
 
                     register_data = update_record(
-                        row_index=real_id,
+                        real_row_id=real_id,
                         date=date_txt,
                         time=complete_row["Time"],
                         category=category_txt,
