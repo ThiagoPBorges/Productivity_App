@@ -3,6 +3,9 @@ import pandas as pd
 from database import get_df
 from datetime import date
 import calendar
+import altair as alt
+
+# Set page config
 
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
@@ -139,3 +142,31 @@ with c2:
     st.bar_chart(category_distribution, horizontal=True,color="#0c3ac5")
 
 st.markdown("---")
+
+days_order = [
+    "Monday", "Tuesday", "Wednesday", "Thursday", 
+    "Friday", "Saturday", "Sunday"
+]
+
+df_monthly['day_of_week'] = pd.Categorical(
+    df_monthly['Date'].dt.day_name(), 
+    categories=days_order, 
+    ordered=True
+)
+
+df_monthly['Hours'] = round((df_monthly['Duration'] / 60),2)
+weekday_averages = df_monthly.groupby('day_of_week', observed=False)['Hours'].sum()
+chart_data = weekday_averages.reset_index()
+chart_data.columns = ['Day', 'Hours']
+
+st.subheader("📅 Weekly Performance Pattern")
+st.caption("Which is your most productive day?")
+
+chart = alt.Chart(chart_data).mark_bar(color="#ffaa00").encode(
+    x=alt.X('Day', sort=days_order, title='Day of Week'),
+    y=alt.Y('Hours', title='Total Duration (hours)'),
+    tooltip=['Day', 'Hours']
+)
+
+st.altair_chart(chart, use_container_width=True)
+

@@ -5,6 +5,7 @@ from database import get_df
 from database import save_record
 from database import update_record
 import time
+from datetime import datetime
 
 # Set page config
 st.set_page_config(
@@ -111,6 +112,9 @@ with st.form("form_register"):
 
 # ----------------------- LOGIC OF SAVE -----------------------
 if is_admin and submitted:
+
+    time_now = datetime.now().strftime("%H:%M:%S")
+
     save = save_record(register_date, category, notes, duration)
     
     if save:
