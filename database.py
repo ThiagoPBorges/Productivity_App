@@ -59,8 +59,6 @@ def get_df():
         # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
              return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration"])
-        
-        df['ID_Google'] = df.index + 2
 
         return df
     return None
@@ -94,7 +92,7 @@ def update_record(real_row_id,date, time, category, notes, duration):
             google_row_number = real_row_id
             
             # Prepare rows and your type of data (Exactly sequence)
-            row_data = [str(date), str(time), str(category), str(notes), int(duration)]
+            row_data = [str(date), time, category, notes, duration]
             
             # Define the exact address (Range)
             # Ex: If the line is 10, the range will be "A10:D10"
