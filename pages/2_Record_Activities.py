@@ -144,6 +144,9 @@ if st.session_state["show_editor"]:
                                 format="DD/MM/YYYY",
                                 step=1,
                             ),
+                            "Time": st.column_config.TextColumn(
+                                "Time"
+                            ),
                             "Notes": st.column_config.TextColumn(
                                 "Notes"
                             ),
@@ -187,6 +190,7 @@ if st.session_state["show_editor"]:
                     register_data = update_record(
                         row_index=index_pandas,
                         date=date_txt,
+                        time=complete_row["Time"],
                         category=category_txt,
                         notes=notes_txt,
                         duration=dur_int
