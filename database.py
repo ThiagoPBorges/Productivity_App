@@ -94,7 +94,7 @@ def update_record(row_index,date, time, category, notes, duration):
             
             # Define the exact address (Range)
             # Ex: If the line is 10, the range will be "A10:D10"
-            range_address = f"A{google_row_number}:D{google_row_number}"
+            range_address = f"A{google_row_number}:E{google_row_number}"
             
             # Send the update command via range
             sheet.update_values(crange=range_address, values=[row_data])
