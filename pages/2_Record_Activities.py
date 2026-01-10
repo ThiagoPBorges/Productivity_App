@@ -6,6 +6,7 @@ from database import save_record
 from database import update_record
 import time
 from datetime import datetime
+import pytz
 
 # Set page config
 st.set_page_config(
@@ -113,7 +114,8 @@ with st.form("form_register"):
 # ----------------------- LOGIC OF SAVE -----------------------
 if is_admin and submitted:
 
-    time_now = datetime.now().strftime("%H:%M:%S")
+    br_time = pytz.timezone('America/Sao_Paulo')
+    time_now = datetime.now(br_time).strftime("%H:%M:%S")
 
     save = save_record(register_date, time_now, category, notes, duration)
     
