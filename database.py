@@ -4,8 +4,10 @@ import os
 import pygsheets
 import json
 
+'''
 # Use to reserve the local memory and to prevent the app from having to read code all the time.
 @st.cache_resource
+'''
 
 def get_worksheet():
     """
@@ -52,7 +54,7 @@ def get_df():
     
     if sheet:
         # Transforms my records into a dataframe
-        df = sheet.get_as_df()
+        df = sheet.get_as_df(has_header=True)
 
         # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
@@ -96,6 +98,7 @@ def update_record(row_index,date, time, category, notes, duration):
             # Ex: If the line is 10, the range will be "A10:D10"
             range_address = f"A{google_row_number}:E{google_row_number}"
             
+            st.toast(f"🔧 Debug: Atualizando linha {google_row_number} no Sheets...")
             # Send the update command via range
             sheet.update_values(crange=range_address, values=[row_data])
             
