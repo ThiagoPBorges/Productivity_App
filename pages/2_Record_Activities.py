@@ -139,7 +139,7 @@ if st.session_state["show_editor"]:
             st.subheader("✏️ Editor of records")
             st.caption("Edit directly in table below and press Enter.")
 
-            df_visual = df.sort_values(by='Date', ascending=False)
+            df_visual = df.sort_values(by='Date', ascending=False).set_index("ID_Google")
 
             df_edited = st.data_editor(
                         df_visual,
@@ -147,7 +147,6 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
-                            #"ID_Google": None,
                             "Date": st.column_config.DateColumn(
                                 "Date", format="DD/MM/YYYY", step=1
                             ),
@@ -173,17 +172,19 @@ if st.session_state["show_editor"]:
 
                 i = 0
 
-                for index_pandas, alterations in changes.items():
+                for id_google, alterations in changes.items():
                     i += 1
                     progress.progress(i/total_changes)
+
+                    real_id = id_google
+
+                    complete_row = df_edited.loc[id_google]
+
                     status_txt.text(f"Saving {i}/{total_changes}... (Wait for Google Sheets to update)")
 
-                    time.sleep(1.5)
+                    time.sleep(1)
 
-                    complete_row = df_edited.loc[index_pandas]
-                    real_id = int(complete_row["ID_Google"])
-
-                    status_txt.markdown(f"🔍 Editando: **{complete_row['Category']}** ({complete_row['Date']}) | ID Sheets: **{real_id}**")
+                    status_txt.markdown(f"🔍 Editing: **{complete_row['Category']}** ({complete_row['Date']}) | ID Sheets: **{real_id}**")
 
                     # Set data types
                     date_txt = str(complete_row["Date"])
