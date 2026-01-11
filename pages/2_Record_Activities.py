@@ -141,7 +141,6 @@ if st.session_state["show_editor"]:
 
             df_visual = df.sort_values(by='Date', ascending=False)
             df_visual["ID_Google"] = df_visual["ID_Google"].astype(int)
-            df_visual = df_visual.set_index("ID_Google")
 
             df_edited = st.data_editor(
                         df_visual,
@@ -149,10 +148,15 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
+                            "ID_Google": st.column_config.NumberColumn("ID Excel", disabled=True),
                             "Date": st.column_config.DateColumn(
                                 "Date", format="DD/MM/YYYY", step=1
                             ),
                             "Time": st.column_config.TextColumn("Time"),
+                            "Category": st.column_config.SelectboxColumn(
+                                "Category", ["Studies", "English", "Read"]
+                            ),
+                            "Duration": st.column_config.NumberColumn("Duration (min)"),
                             "Notes": st.column_config.TextColumn("Notes"),
                         },
                         hide_index=True
@@ -165,37 +169,53 @@ if st.session_state["show_editor"]:
                 st.warning(f"You have changed {len(changes)} record(s). Do you want to save?")
 
             if st.button("💾 Save changes"):
-
                 progress = st.progress(0)
                 status_txt = st.empty()
                 total_changes = len(changes)
                 erros = 0
                 i = 0
 
-                for id_google, alterations in changes.items():
+                # Aqui 'index_pandas' é o número interno do Pandas (ex: 55), não o ID do Google
+                for index_pandas, alterations in changes.items():
                     i += 1
                     progress.progress(i/total_changes)
 
                     try:
-                        real_id = int(id_google)
-                        
-                        if real_id in df_edited.index:
+                        # 1. Buscamos a linha no DataFrame Visual usando o índice do Pandas
+                        # O .loc[index_pandas] acha a linha original mesmo se estiver ordenada
+                        if index_pandas in df_visual.index:
+                            complete_row = df_visual.loc[index_pandas]
                             
-                            complete_row = df_edited.loc[real_id]
+                            # 2. AGORA sim pegamos o ID do Google de dentro da coluna
+                            real_id = int(complete_row["ID_Google"])
 
-                            status_txt.text(f"Saving {i}/{total_changes}...")
+                            status_txt.markdown(f"💾 Saving Row... **Category:** {complete_row['Category']} | **ID:** {real_id}")
                             time.sleep(0.5)
 
-                            date_txt = str(complete_row["Date"])
-                            category_txt = str(complete_row["Category"])
-                            notes_txt = str(complete_row["Notes"]) if pd.notna(complete_row["Notes"]) else ""
-                            time_txt = str(complete_row["Time"]) if pd.notna(complete_row["Time"]) else ""
+                            # 3. Mescla os dados originais com o que você alterou
+                            # (Se alterou só Duration, mantemos as Notas antigas, etc)
+                            current_data = complete_row.to_dict()
+                            # Atualiza com as alterações vindas do editor
+                            current_data.update(alterations)
+
+                            # Prepara envio
+                            # Nota: dataframe usa Timestamp, convertemos para string
+                            date_val = current_data["Date"]
+                            if hasattr(date_val, 'strftime'):
+                                date_txt = date_val.strftime("%Y-%m-%d")
+                            else:
+                                date_txt = str(date_val)
+
+                            category_txt = str(current_data["Category"])
+                            notes_txt = str(current_data["Notes"]) if pd.notna(current_data["Notes"]) else ""
+                            time_txt = str(current_data["Time"]) if pd.notna(current_data["Time"]) else ""
 
                             try:
-                                dur_int = int(complete_row["Duration"])
+                                dur_int = int(current_data["Duration"])
                             except:
                                 dur_int = 0
 
+                            # Envia
                             register_data = update_record(
                                 real_row_id=real_id,
                                 date=date_txt,
@@ -207,38 +227,33 @@ if st.session_state["show_editor"]:
                             
                             if not register_data:
                                 erros += 1
-                                st.error(f"❌ Error to save row {real_id}.")
-                        
+                                st.error(f"❌ Error saving ID {real_id}.")
                         else:
-                            st.warning(f"⚠️ ID {real_id} was skipped because it's not in the current view (check filters).")
-                    
-                    except ValueError:
-                        st.error(f"⚠️ Error processing ID: {id_google}")
-                        erros += 1
+                            st.warning(f"⚠️ Could not locate row index {index_pandas} in current view.")
+                            erros += 1
+
                     except Exception as e:
-                        st.error(f"⚠️ Unexpected error on ID {id_google}: {e}")
+                        st.error(f"⚠️ Error processing row: {e}")
                         erros += 1
                 
                 progress.empty()
                 status_txt.empty()
                 
                 if erros == 0:
-                    st.success("✅ All records saved successfully!")
+                    st.success("✅ All records updated successfully!")
                     time.sleep(1)
                     st.cache_data.clear()
                     st.rerun()
                 else:
-                    st.warning(f"⚠️ Process completed with {erros} error(s).")
+                    st.warning(f"⚠️ Process finished with {erros} error(s).")
         else:
-            st.warning("🔒 You are in View Mode. Login to edit records.")
+            st.warning("🔒 You are in View Mode.")
             st.dataframe(df.sort_values(by='Date', ascending=True), use_container_width=True)
 
 if not st.session_state["show_editor"]:
-    st.dataframe(df.sort_values(by='Date', ascending=False),
-                 use_container_width=True,
-                 hide_index=True,
-                 column_config={
-                     "ID_Google": None
-                 }
-                 
-                 )
+    st.dataframe(
+        df.sort_values(by='Date', ascending=False),
+        use_container_width=True,
+        hide_index=True,
+        column_config={"ID_Google": None}
+    )
