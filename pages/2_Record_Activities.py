@@ -145,8 +145,7 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
-                            "ID_Google": None
-                            ,
+                            #"ID_Google": None,
                             "Date": st.column_config.DateColumn(
                                 "Date", format="DD/MM/YYYY", step=1
                             ),
