@@ -44,8 +44,8 @@ df = get_df()
 if not df.empty:
     df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
     df = df.dropna(subset=["Date"])
+
     df["Date"] = df["Date"].dt.date
-    
     df["Notes"] = df["Notes"].fillna("").astype(str)
     df["Duration"] = df["Duration"].fillna(0).astype(int)
     
@@ -139,8 +139,10 @@ if st.session_state["show_editor"]:
             st.subheader("✏️ Editor of records")
             st.caption("Edit directly in table below and press Enter.")
 
+            df_visual = df.sort_values(by='Date', ascending=False)
+
             df_edited = st.data_editor(
-                        df.sort_values(by='Date', ascending=False),
+                        df_visual,
                         width="stretch",
                         num_rows="fixed",
                         key="editor_table",
@@ -179,8 +181,9 @@ if st.session_state["show_editor"]:
                     time.sleep(1.5)
 
                     complete_row = df_edited.loc[index_pandas]
-
                     real_id = int(complete_row["ID_Google"])
+
+                    status_txt.markdown(f"🔍 Editando: **{complete_row['Category']}** ({complete_row['Date']}) | ID Sheets: **{real_id}**")
 
                     # Set data types
                     date_txt = str(complete_row["Date"])
