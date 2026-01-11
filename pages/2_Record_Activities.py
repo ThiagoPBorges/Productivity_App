@@ -224,10 +224,10 @@ if st.session_state["show_editor"]:
                     st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
         else:
             st.warning("🔒 You are in View Mode. Login to edit records.")
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df.sort_values(by='Date', ascending=True), use_container_width=True)
 
 if not st.session_state["show_editor"]:
-    st.dataframe(df,
+    st.dataframe(df.sort_values(by='Date', ascending=False),
                  use_container_width=True,
                  hide_index=True,
                  column_config={
