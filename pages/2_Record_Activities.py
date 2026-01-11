@@ -139,7 +139,9 @@ if st.session_state["show_editor"]:
             st.subheader("✏️ Editor of records")
             st.caption("Edit directly in table below and press Enter.")
 
-            df_visual = df.sort_values(by='Date', ascending=False).set_index("ID_Google")
+            df_visual = df.sort_values(by='Date', ascending=False)
+            df_visual["ID_Google"] = df_visual["ID_Google"].astype(int)
+            df_visual = df_visual.set_index("ID_Google")
 
             df_edited = st.data_editor(
                         df_visual,
@@ -176,7 +178,7 @@ if st.session_state["show_editor"]:
                     i += 1
                     progress.progress(i/total_changes)
 
-                    real_id = id_google
+                    real_id = int(id_google)
 
                     complete_row = df_edited.loc[id_google]
 
@@ -205,7 +207,7 @@ if st.session_state["show_editor"]:
                     )
                     if not register_data:
                         erros += 1
-                        st.error(f"❌ Error to save row {index_pandas}. Try again later.")
+                        st.error(f"❌ Error to save row {id_google}. Try again later.")
                 
                 progress.empty()
                 status_txt.empty()
