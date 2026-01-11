@@ -153,9 +153,7 @@ if st.session_state["show_editor"]:
                                 "Date", format="DD/MM/YYYY", step=1
                             ),
                             "Time": st.column_config.TextColumn("Time"),
-                            "Category": st.column_config.SelectboxColumn(
-                                "Category", ["Studies", "English", "Read"]
-                            ),
+                            "Category": st.column_config.TextColumn("Category"),
                             "Duration": st.column_config.NumberColumn("Duration (min)"),
                             "Notes": st.column_config.TextColumn("Notes"),
                         },
