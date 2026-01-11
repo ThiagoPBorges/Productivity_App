@@ -166,60 +166,69 @@ if st.session_state["show_editor"]:
 
             if st.button("💾 Save changes"):
 
-                # Progress bar of progress
                 progress = st.progress(0)
                 status_txt = st.empty()
                 total_changes = len(changes)
                 erros = 0
-
                 i = 0
 
                 for id_google, alterations in changes.items():
                     i += 1
                     progress.progress(i/total_changes)
 
-                    real_id = int(id_google)
-
-                    complete_row = df_edited.loc[real_id]
-
-                    status_txt.text(f"Saving {i}/{total_changes}... (Wait for Google Sheets to update)")
-
-                    time.sleep(1)
-
-                    status_txt.markdown(f"🔍 Editing: **{complete_row['Category']}** ({complete_row['Date']}) | ID Sheets: **{real_id}**")
-
-                    # Set data types
-                    date_txt = str(complete_row["Date"])
-                    category_txt = str(complete_row["Category"])
-                    notes_txt = str(complete_row["Notes"]) if complete_row["Notes"] else ""
                     try:
-                        dur_int = int(complete_row["Duration"])
-                    except:
-                        dur_int = 0
+                        real_id = int(id_google)
+                        
+                        if real_id in df_edited.index:
+                            
+                            complete_row = df_edited.loc[real_id]
 
-                    register_data = update_record(
-                        real_row_id=real_id,
-                        date=date_txt,
-                        time=complete_row["Time"],
-                        category=category_txt,
-                        notes=notes_txt,
-                        duration=dur_int
-                    )
-                    if not register_data:
+                            status_txt.text(f"Saving {i}/{total_changes}...")
+                            time.sleep(0.5)
+
+                            date_txt = str(complete_row["Date"])
+                            category_txt = str(complete_row["Category"])
+                            notes_txt = str(complete_row["Notes"]) if pd.notna(complete_row["Notes"]) else ""
+                            time_txt = str(complete_row["Time"]) if pd.notna(complete_row["Time"]) else ""
+
+                            try:
+                                dur_int = int(complete_row["Duration"])
+                            except:
+                                dur_int = 0
+
+                            register_data = update_record(
+                                real_row_id=real_id,
+                                date=date_txt,
+                                time=time_txt,
+                                category=category_txt,
+                                notes=notes_txt,
+                                duration=dur_int
+                            )
+                            
+                            if not register_data:
+                                erros += 1
+                                st.error(f"❌ Error to save row {real_id}.")
+                        
+                        else:
+                            st.warning(f"⚠️ ID {real_id} was skipped because it's not in the current view (check filters).")
+                    
+                    except ValueError:
+                        st.error(f"⚠️ Error processing ID: {id_google}")
                         erros += 1
-                        st.error(f"❌ Error to save row {id_google}. Try again later.")
+                    except Exception as e:
+                        st.error(f"⚠️ Unexpected error on ID {id_google}: {e}")
+                        erros += 1
                 
                 progress.empty()
                 status_txt.empty()
                 
                 if erros == 0:
                     st.success("✅ All records saved successfully!")
-                    import time
                     time.sleep(1)
                     st.cache_data.clear()
                     st.rerun()
                 else:
-                    st.warning(f"⚠️ Process was completed with {erros} error(s). System won't refresh to view errors.")
+                    st.warning(f"⚠️ Process completed with {erros} error(s).")
         else:
             st.warning("🔒 You are in View Mode. Login to edit records.")
             st.dataframe(df.sort_values(by='Date', ascending=True), use_container_width=True)
