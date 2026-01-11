@@ -180,7 +180,7 @@ if st.session_state["show_editor"]:
 
                     real_id = int(id_google)
 
-                    complete_row = df_edited.loc[id_google]
+                    complete_row = df_edited.loc[real_id]
 
                     status_txt.text(f"Saving {i}/{total_changes}... (Wait for Google Sheets to update)")
 
