@@ -163,7 +163,7 @@ with cl3:
         
         st.subheader("📖 Reading")
 
-        streak = calculate_streak(df_monthly, 'Reading') 
+        streak = calculate_streak(df_monthly, 'Read') 
 
         daily_reading_goal = 30
         month_reading_goal = daily_reading_goal * month_days
