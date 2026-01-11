@@ -40,17 +40,10 @@ if "admin_password" in st.secrets:
 # Variable to get df
 df = get_df()
 
-# ------- TRAVA DE SEGURANÇA (NOVO) 👇 -------
-# Se por algum motivo o database.py falhar em criar a coluna, criamos aqui.
-if not df.empty and "ID_Google" not in df.columns:
-    df["ID_Google"] = df.index + 2
-
 # ------- Settings to adjust Visualization & Data Settings -------
 if not df.empty:
     df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
-    
     df = df.dropna(subset=["Date"])
-
     df["Date"] = df["Date"].dt.date
     
     df["Notes"] = df["Notes"].fillna("").astype(str)
