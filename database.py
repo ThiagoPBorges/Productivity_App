@@ -106,7 +106,7 @@ def update_record(real_row_id,date, time, category, notes, duration):
             # Ex: If the line is 10, the range will be "A10:D10"
             range_address = f"A{google_row_number}:E{google_row_number}"
             
-            st.toast(f"💾 Saving to row {google_row_number} | Data: {row_data[4]} min...", icon="Cloud")
+            st.toast(f"💾 Saving to row {google_row_number} | Data: {row_data[4]} min...", icon="☁️")
             # Send the update command via range
             sheet.update_values(crange=range_address, values=[row_data])
             
