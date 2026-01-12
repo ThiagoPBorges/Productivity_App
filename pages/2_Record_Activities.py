@@ -180,50 +180,44 @@ if st.session_state["show_editor"]:
                     try:
                         current_row = df_visual.iloc[index_visual]
                         real_id = int(current_row["ID_Google"])
-                        
-                        if real_id in df_visual.index:
-                            complete_row = df_visual.loc[real_id]
 
-                            status_txt.markdown(f"💾 Saving Row... **Category:** {current_row['Category']} | **ID:** {real_id}")
-                            time.sleep(1)
+                        status_txt.markdown(f"💾 Saving Row... **Category:** {current_row['Category']} | **ID:** {real_id}")
+                        time.sleep(1)
 
-                            # --- MISTURA DADOS ANTIGOS + NOVOS ---
-                            current_data = complete_row.to_dict()
-                            current_data.update(alterations)
+                        # --- MISTURA DADOS ANTIGOS + NOVOS ---
+                        current_data = current_row.to_dict()
+                        current_data.update(alterations)
 
-                            # Prepara dados para envio
-                            date_val = current_data["Date"]
-                            # Garante formato de string YYYY-MM-DD
-                            if hasattr(date_val, 'strftime'):
-                                date_txt = date_val.strftime("%Y-%m-%d")
-                            else:
-                                date_txt = str(date_val)
-
-                            category_txt = str(current_data["Category"])
-                            notes_txt = str(current_data["Notes"]) if pd.notna(current_data["Notes"]) else ""
-                            time_txt = str(current_data["Time"]) if pd.notna(current_data["Time"]) else ""
-
-                            try:
-                                dur_int = int(current_data["Duration"])
-                            except:
-                                dur_int = 0
-
-                            # ENVIA PARA O GOOGLE SHEETS
-                            register_data = update_record(
-                                real_row_id=real_id,
-                                date=date_txt,
-                                time=time_txt,
-                                category=category_txt,
-                                notes=notes_txt,
-                                duration=dur_int
-                            )
-                            
-                            if not register_data:
-                                erros += 1
-                                st.error(f"❌ Error saving ID {real_id}.")
+                        # Prepara dados para envio
+                        date_val = current_data["Date"]
+                        # Garante formato de string YYYY-MM-DD
+                        if hasattr(date_val, 'strftime'):
+                            date_txt = date_val.strftime("%Y-%m-%d")
                         else:
-                            st.warning(f"⚠️ ID {real_id} not found in current view.")
+                            date_txt = str(date_val)
+
+                        category_txt = str(current_data["Category"])
+                        notes_txt = str(current_data["Notes"]) if pd.notna(current_data["Notes"]) else ""
+                        time_txt = str(current_data["Time"]) if pd.notna(current_data["Time"]) else ""
+
+                        try:
+                            dur_int = int(current_data["Duration"])
+                        except:
+                            dur_int = 0
+
+                        # ENVIA PARA O GOOGLE SHEETS
+                        register_data = update_record(
+                            real_row_id=real_id,
+                            date=date_txt,
+                            time=time_txt,
+                            category=category_txt,
+                            notes=notes_txt,
+                            duration=dur_int
+                        )
+                        
+                        if not register_data:
                             erros += 1
+                            st.error(f"❌ Error saving ID {real_id}.")
 
                     except Exception as e:
                         st.error(f"⚠️ Unexpected error on ID {index_visual}: {e}")
@@ -244,7 +238,6 @@ if st.session_state["show_editor"]:
             st.dataframe(df.sort_values(by='Date', ascending=True), use_container_width=True)
 
 if not st.session_state["show_editor"]:
-    # Mostra tabela normal (sem edição)
     st.dataframe(
         df.sort_values(by='Date', ascending=False),
         use_container_width=True,
