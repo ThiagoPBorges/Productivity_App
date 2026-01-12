@@ -132,6 +132,7 @@ if is_admin and submitted:
     else:
         st.error("❌ Error saving record in Database.")
 
+
 # ----------------------- EDITOR LOGIC -----------------------
 if st.session_state["show_editor"]:
     with st.container(border=True):
@@ -139,14 +140,10 @@ if st.session_state["show_editor"]:
             st.subheader("✏️ Editor of records")
             st.caption("Edit directly in table below and press Enter.")
 
-            # 1. PREPARAÇÃO DA TABELA
-            # Ordenamos pela data
             df_visual = df.sort_values(by='Date', ascending=False)
-            
-            # 2. O PULO DO GATO 🐈
-            # Definimos o ID_Google como o ÍNDICE da tabela.
-            # Assim, o Streamlit usa o ID Real como chave, e não a posição da linha.
-            df_visual = df_visual.set_index("ID_Google")
+
+            df_visual = df_visual.reset_index(drop=True)
+            df_visual["ID_Google"] = df_visual["ID_Google"].astype(int)
 
             df_edited = st.data_editor(
                         df_visual,
@@ -154,14 +151,14 @@ if st.session_state["show_editor"]:
                         num_rows="fixed",
                         key="editor_table",
                         column_config={
-                            # Como virou índice, não configuramos como coluna normal aqui
+                            "ID_Google": st.column_config.NumberColumn("ID Excel", disabled=True, format="%d"),
                             "Date": st.column_config.DateColumn("Date", format="DD/MM/YYYY", step=1),
                             "Time": st.column_config.TextColumn("Time"),
-                            "Category": st.column_config.TextColumn("Category"), # Adicionei Categoria pra garantir
+                            "Category": st.column_config.TextColumn("Category"),
                             "Notes": st.column_config.TextColumn("Notes"),
                             "Duration": st.column_config.NumberColumn("Duration (min)"),
-                        }
-                        # Não usamos hide_index=True para você ver o ID na esquerda!
+                        },
+                        hide_index=True
                     )
             
             changes = st.session_state["editor_table"]["edited_rows"]
@@ -176,21 +173,19 @@ if st.session_state["show_editor"]:
                 erros = 0
                 i = 0
 
-                # Como usamos set_index("ID_Google"), a 'key' do dicionário AGORA É O ID REAL!
-                for id_google_key, alterations in changes.items():
+                for index_visual, alterations in changes.items():
                     i += 1
                     progress.progress(i/total_changes)
 
                     try:
-                        # Convertemos a chave para inteiro (garantia de tipo)
-                        real_id = int(id_google_key)
-
-                        # Pegamos os dados originais dessa linha usando o ID
+                        current_row = df_visual.iloc[index_visual]
+                        real_id = int(current_row["ID_Google"])
+                        
                         if real_id in df_visual.index:
                             complete_row = df_visual.loc[real_id]
 
-                            status_txt.markdown(f"💾 Saving ID: **{real_id}** | Date: {complete_row['Date']}")
-                            time.sleep(0.5)
+                            status_txt.markdown(f"💾 Saving Row... **Category:** {current_row['Category']} | **ID:** {real_id}")
+                            time.sleep(1)
 
                             # --- MISTURA DADOS ANTIGOS + NOVOS ---
                             current_data = complete_row.to_dict()
@@ -231,7 +226,7 @@ if st.session_state["show_editor"]:
                             erros += 1
 
                     except Exception as e:
-                        st.error(f"⚠️ Unexpected error on ID {id_google_key}: {e}")
+                        st.error(f"⚠️ Unexpected error on ID {index_visual}: {e}")
                         erros += 1
                 
                 progress.empty()
