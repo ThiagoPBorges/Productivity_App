@@ -87,7 +87,7 @@ def calculate_streak(df, category):
     return current_streak
 
 # Create 3 columns to bring Expected x Actual
-cl1,cl2,cl3 = st.columns(3)
+cl1,cl2,cl3,cl4 = st.columns(4)
 
 # Studies Goal
 with cl1:
@@ -96,7 +96,7 @@ with cl1:
         st.subheader("📚 Studies")
 
         streak = calculate_streak(df_monthly, 'Studies')
-        daily_study_goal = 60
+        daily_study_goal = 90
         month_study_goal = daily_study_goal * month_days
         performed_study = df_monthly[df_monthly['Category'] == 'Studies']['Duration'].sum()
 
@@ -191,6 +191,41 @@ with cl3:
         reading_progress = performed_reading / month_reading_goal
         st.progress(min(reading_progress, 1.0))
         st.caption(f"{int(reading_progress*100)}% completed")
+
+# Personal projects goal
+with cl4:
+    with st.container(border=True):
+        
+        st.subheader("📖 Personal projects")
+
+        streak = calculate_streak(df_monthly, 'Personal projects') 
+
+        daily_projects_goal = 30
+        month_projects_goal = daily_projects_goal * month_days
+        performed_projects = df_monthly[df_monthly['Category'] == 'Personal projects']['Duration'].sum()
+
+        kpi1, kpi2 = st.columns(2)
+
+        with kpi1:
+            st.metric(
+                label="🔥 Streak",
+                value=f"{streak} days"
+            )
+            
+        with kpi2:
+            hours_done = round(performed_projects/60, 1)
+            hours_goal = round(month_projects_goal/60, 1)
+            delta_val = round(hours_done - hours_goal, 1)
+            
+            st.metric(
+                label="⏱️ Performance", 
+                value=f"{hours_done}h",
+                help=f"Goal: {hours_goal}h per month"
+            )
+
+        projects_progress = performed_projects / month_projects_goal
+        st.progress(min(projects_progress, 1.0))
+        st.caption(f"{int(projects_progress*100)}% completed")
 
 st.write("")
 

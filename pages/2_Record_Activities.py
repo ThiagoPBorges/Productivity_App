@@ -78,7 +78,7 @@ with st.form("form_register"):
 
     with col1:
         register_date = st.date_input("Date", value=date.today(), format="DD/MM/YYYY")
-        category = st.selectbox("Category", ["Studies", "English", "Read"])
+        category = st.selectbox("Category", ["Studies", "English", "Read", "Personal projects"])
 
     with col2:
         duration = st.number_input("Time Spent (minutes)", min_value=0, step=5)
