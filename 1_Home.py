@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+import pytz
 
 # Code to run the app
 # streamlit run 1_Home.py
@@ -28,13 +29,15 @@ with st.sidebar:
 # --- MAIN CONTENT ---
 st.title("🎯 FocusData: Productivity Hub")
 
-today = datetime.now().strftime("%A, %d %B %Y")
+br_timezone = pytz.timezone('America/Sao_Paulo')
+now_in_brazil = datetime.now(br_timezone)
+today = datetime.now(br_timezone).strftime("%A, %d %B %Y")
 st.markdown(f"*{today}*")
 
 st.write("")
 
 # Greetings logic
-current_hour = datetime.now().hour
+current_hour = now_in_brazil.hour
 if 5 <= current_hour < 12:
     greeting_msg = "🌅 Good Morning! Ready to produce?"
 elif 12 <= current_hour < 18:

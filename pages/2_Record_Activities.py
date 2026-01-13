@@ -73,11 +73,14 @@ if selected_category != "General":
 with st.form("form_register"):
     st.subheader("📝 New record")
 
+    br_timezone = pytz.timezone('America/Sao_Paulo')
+    today_br = datetime.now(br_timezone).date()
+
     # Organizing them into columns to make them visual.
     col1, col2 = st.columns(2)
 
     with col1:
-        register_date = st.date_input("Date", value=date.today(), format="DD/MM/YYYY")
+        register_date = st.date_input("Date", value=today_br, format="DD/MM/YYYY")
         category = st.selectbox("Category", ["Studies", "English", "Read", "Personal projects"])
 
     with col2:
