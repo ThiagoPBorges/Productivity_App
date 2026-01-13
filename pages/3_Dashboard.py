@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 from database import get_df
-from datetime import date,timedelta
+from datetime import date,timedelta, datetime
 import calendar
 import altair as alt
+import pytz
 
 # Set page config
 
@@ -72,19 +73,20 @@ def calculate_streak(df, category):
     # Set function convert column to unique list
     unique_days = set(df_category["Date"])
 
-    today = date.today()
+    br_timezone = pytz.timezone('America/Sao_Paulo')
+    today = datetime.now(br_timezone).date()
     current_streak = 0
     check_date = today
 
     # Wait a range of one day to start analyze streak
     if not check_date in unique_days:
         check_date = check_date - timedelta(days=1)
-    else:
-        while check_date in unique_days:
-            current_streak += 1
-            check_date = check_date - timedelta(days=1)
 
-        return current_streak
+    while check_date in unique_days:
+        current_streak += 1
+        check_date = check_date - timedelta(days=1)
+
+    return current_streak
 
 # Create 3 columns to bring Expected x Actual
 cl1,cl2,cl3,cl4 = st.columns(4)
