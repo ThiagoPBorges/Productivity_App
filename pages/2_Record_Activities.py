@@ -7,6 +7,7 @@ from database import update_record
 import time
 from datetime import datetime
 import pytz
+import time
 
 # Set page config
 st.set_page_config(
@@ -67,6 +68,55 @@ selected_category = st.sidebar.selectbox("Category", categories_list)
 if selected_category != "General":
     df = df[df["Category"] == selected_category]
 
+
+# ----------------------- STOPWATCH -----------------------
+
+@st.fragment(run_every=1)
+def stopwatch():
+    if "running" not in st.session_state:
+        st.session_state.running = False
+    if "start_time" not in st.session_state:
+        st.session_state.start_time = None
+    if "elapsed_minutes" not in st.session_state:
+        st.session_state.elapsed_minutes = 0
+
+    with st.container(border=True):
+            c1, c2, c3 = st.columns([2, 1, 1])
+            with c1:
+                st.caption("⏱️ Activity Timer")
+                # If it's working, calculate the real time
+                if st.session_state.running:
+                    elapsed = time.time() - st.session_state.start_time
+                    minutes = int(elapsed // 60)
+                    seconds = int(elapsed % 60)
+                    st.markdown(f"## {minutes:02d}:{seconds:02d}")
+                else:
+                    # If stopped, show the last saved value
+                    st.markdown(f"## {st.session_state.elapsed_minutes:02d}:00")
+
+            with c2:
+                st.write("")
+                if not st.session_state.running:
+                    if st.button("▶️ Start"):
+                        st.session_state.running = True
+                        st.session_state.start_time = time.time()
+                        st.rerun() # Force the suddenly update of button
+                else:
+                    if st.button("⏹️ Stop"):
+                        # If stop, calculate the minute total and save
+                        total_elapsed = time.time() - st.session_state.start_time
+                        st.session_state.elapsed_minutes = int(total_elapsed // 60)
+                        st.session_state.running = False
+                        st.rerun()
+            
+            with c3:
+                st.write("")
+                if st.button("🔄 Reset"):
+                    st.session_state.elapsed_minutes = 0
+                    st.session_state.running = False
+                    st.rerun()
+
+stopwatch()
 
 
 # ----------------------- INPUT FORM -----------------------
