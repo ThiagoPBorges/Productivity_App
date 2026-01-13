@@ -79,12 +79,12 @@ def calculate_streak(df, category):
     # Wait a range of one day to start analyze streak
     if not check_date in unique_days:
         check_date = check_date - timedelta(days=1)
+    else:
+        while check_date in unique_days:
+            current_streak += 1
+            check_date = check_date - timedelta(days=1)
 
-    while check_date in unique_days:
-        current_streak += 1
-        check_date = check_date - timedelta(days=1)
-
-    return current_streak
+        return current_streak
 
 # Create 3 columns to bring Expected x Actual
 cl1,cl2,cl3,cl4 = st.columns(4)
