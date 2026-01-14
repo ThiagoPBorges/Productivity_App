@@ -79,7 +79,7 @@ with col1:
     with st.container(border=True):
         st.subheader("📝 Record_Activities")
         st.write("Record your daily activities.")
-        st.caption("Inputs Routines: English, Reading, Studies, Gym...")
+        st.caption("Inputs Routines: English, Reading, Studies, Workout...")
         st.page_link(
             "pages/2_Record_Activities.py", 
             label="Go to Register", 

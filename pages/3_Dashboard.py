@@ -89,7 +89,7 @@ def calculate_streak(df, category):
     return current_streak
 
 # Create 3 columns to bring Expected x Actual
-cl1,cl2,cl3,cl4 = st.columns(4)
+cl1,cl2,cl3,cl4,cl5 = st.columns(5)
 
 # Studies Goal
 with cl1:
@@ -98,7 +98,7 @@ with cl1:
         st.subheader("📚 Studies")
 
         streak = calculate_streak(df_monthly, 'Studies')
-        daily_study_goal = 90
+        daily_study_goal = 60
         month_study_goal = daily_study_goal * month_days
         performed_study = df_monthly[df_monthly['Category'] == 'Studies']['Duration'].sum()
 
@@ -116,7 +116,7 @@ with cl1:
             delta_val = round(hours_done - hours_goal, 1)
             
             st.metric(
-                label="⏱️ Performance", 
+                label="⏱️ Output", 
                 value=f"{hours_done}h",
                 help=f"Goal: {hours_goal}h per month"
             )
@@ -150,7 +150,7 @@ with cl2:
             delta_val = round(hours_done - hours_goal, 1)
             
             st.metric(
-                label="⏱️ Performance", 
+                label="⏱️ Output", 
                 value=f"{hours_done}h",
                 help=f"Goal: {hours_goal}h per month"
             )
@@ -185,7 +185,7 @@ with cl3:
             delta_val = round(hours_done - hours_goal, 1)
             
             st.metric(
-                label="⏱️ Performance", 
+                label="⏱️ Output", 
                 value=f"{hours_done}h",
                 help=f"Goal: {hours_goal}h per month"
             )
@@ -228,6 +228,41 @@ with cl4:
         projects_progress = performed_projects / month_projects_goal
         st.progress(min(projects_progress, 1.0))
         st.caption(f"{int(projects_progress*100)}% completed")
+
+# Workout Goal
+with cl5:
+    with st.container(border=True):
+        
+        st.subheader("🏋️‍♂️ Workout")
+
+        streak = calculate_streak(df_monthly, 'Workout') 
+
+        daily_Workout_goal = 60
+        month_Workout_goal = daily_Workout_goal * month_days
+        performed_Workout = df_monthly[df_monthly['Category'] == 'Workout']['Duration'].sum()
+
+        kpi1, kpi2 = st.columns(2)
+
+        with kpi1:
+            st.metric(
+                label="🔥 Streak",
+                value=f"{streak} days"
+            )
+            
+        with kpi2:
+            hours_done = round(performed_Workout/60, 1)
+            hours_goal = round(month_Workout_goal/60, 1)
+            delta_val = round(hours_done - hours_goal, 1)
+            
+            st.metric(
+                label="⏱️ Output", 
+                value=f"{hours_done}h",
+                help=f"Goal: {hours_goal}h per month"
+            )
+
+        workout_progress = performed_Workout / month_Workout_goal
+        st.progress(min(workout_progress, 1.0))
+        st.caption(f"{int(workout_progress*100)}% completed")
 
 st.write("")
 
