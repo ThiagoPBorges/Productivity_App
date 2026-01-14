@@ -77,42 +77,49 @@ def stopwatch():
         st.session_state.running = False
     if "start_time" not in st.session_state:
         st.session_state.start_time = None
-    if "elapsed_minutes" not in st.session_state:
-        st.session_state.elapsed_minutes = 0
+    if "elapsed_total" not in st.session_state:
+        st.session_state.elapsed_total = 0
 
     with st.container(border=True):
+            
             c1, c2, c3 = st.columns([2, 1, 1])
+
             with c1:
                 st.caption("⏱️ Activity Timer")
-                # If it's working, calculate the real time
+
                 if st.session_state.running:
-                    elapsed = time.time() - st.session_state.start_time
-                    minutes = int(elapsed // 60)
-                    seconds = int(elapsed % 60)
-                    st.markdown(f"## {minutes:02d}:{seconds:02d}")
+                    # If it's working, calculate the real time
+                    current_total = time.time() - st.session_state.start_time
+                    minutes = int(current_total // 60)
+                    seconds = int(current_total % 60)
                 else:
                     # If stopped, show the last saved value
-                    st.markdown(f"## {st.session_state.elapsed_minutes:02d}:00")
+                    minutes = int(st.session_state.elapsed_total // 60)
+                    seconds = int(st.session_state.elapsed_total % 60)
+                st.markdown(f"## {minutes:02d}:{seconds:02d}")
 
             with c2:
                 st.write("")
                 if not st.session_state.running:
-                    if st.button("▶️ Start"):
-                        st.session_state.running = True
-                        st.session_state.start_time = time.time()
-                        st.rerun() # Force the suddenly update of button
+                    if st.session_state.elapsed_total < 1:
+                        if st.button("▶️ Start"):
+                            st.session_state.running = True
+                            st.session_state.start_time = time.time()
+                            st.rerun()
+                    else:
+                        st.success("✅ Done!")
+
                 else:
                     if st.button("⏹️ Stop"):
                         # If stop, calculate the minute total and save
-                        total_elapsed = time.time() - st.session_state.start_time
-                        st.session_state.elapsed_minutes = int(total_elapsed // 60)
+                        st.session_state.elapsed_total = time.time() - st.session_state.start_time
                         st.session_state.running = False
                         st.rerun()
             
             with c3:
                 st.write("")
                 if st.button("🔄 Reset"):
-                    st.session_state.elapsed_minutes = 0
+                    st.session_state.elapsed_total = 0
                     st.session_state.running = False
                     st.rerun()
 

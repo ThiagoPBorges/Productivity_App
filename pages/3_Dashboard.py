@@ -198,7 +198,7 @@ with cl3:
 with cl4:
     with st.container(border=True):
         
-        st.subheader("📖 Personal projects")
+        st.subheader("🛠️ Projects")
 
         streak = calculate_streak(df_monthly, 'Personal projects') 
 
