@@ -127,7 +127,7 @@ stopwatch()
 
 
 # ----------------------- INPUT FORM -----------------------
-with st.form("form_register"):
+with st.container(border=True):
     st.subheader("📝 New record")
 
     br_timezone = pytz.timezone('America/Sao_Paulo')
@@ -141,7 +141,11 @@ with st.form("form_register"):
         category = st.selectbox("Category", ["Studies", "English", "Read", "Personal projects", "Workout"])
 
     with col2:
-        duration = st.number_input("Time Spent (minutes)", min_value=0, step=5)
+        if category == "Read":
+            pages = st.number_input("Pages of book", min_value=1, step=2)
+        else:
+            pages = 0
+            duration = st.number_input("Time Spent (minutes)", min_value=1, step=5)
         notes = st.text_input("Detail of the activity")
 
     # Organizing them into columns to make them visual.
@@ -149,18 +153,18 @@ with st.form("form_register"):
 
     with c1:
             if is_admin:
-                submitted = st.form_submit_button("💾 Save Register")
+                submitted = st.button("💾 Save Register")
             else:
-                submitted = st.form_submit_button("💾 Save Register", disabled=True)
+                submitted = st.button("💾 Save Register", disabled=True)
                 st.caption("🔒 Login to edit records.")
     with c2:
         if is_admin:
             # Editor button using the state to appear and hide editor mode
             editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
-            editor_button_click = st.form_submit_button(editor_button)
+            editor_button_click = st.button(editor_button)
         else:
             editor_button = "❌ Close Editor" if st.session_state["show_editor"] else "✏️ Edit Register"
-            editor_button_click = st.form_submit_button(editor_button, disabled=True)
+            editor_button_click = st.button(editor_button, disabled=True)
         
         # Change mode os state
         if editor_button_click:
@@ -169,11 +173,11 @@ with st.form("form_register"):
     # Use to refresh data
     with c3:
         if is_admin:
-            if st.form_submit_button("🔄 Refresh Data"):
+            if st.button("🔄 Refresh Data"):
                 st.cache_data.clear()
                 st.rerun()
         else:
-            st.form_submit_button("🔄 Refresh Data", disabled=True)
+            st.button("🔄 Refresh Data", disabled=True)
     
 
 
@@ -183,12 +187,15 @@ if is_admin and submitted:
     br_time = pytz.timezone('America/Sao_Paulo')
     time_now = datetime.now(br_time).strftime("%H:%M:%S")
 
-    save = save_record(register_date, time_now, category, notes, duration)
+    save = save_record(register_date, time_now, category, notes, duration, pages)
     
     if save:
         st.success("✅ Record saved successfully in Database!")
         # Visual efect after save
         st.balloons()
+        time.sleep(1)
+        st.cache_data.clear()
+        st.rerun()
     else:
         st.error("❌ Error saving record in Database.")
 
@@ -217,6 +224,7 @@ if st.session_state["show_editor"]:
                             "Category": st.column_config.TextColumn("Category"),
                             "Notes": st.column_config.TextColumn("Notes"),
                             "Duration": st.column_config.NumberColumn("Duration (min)"),
+                            "Pages": st.column_config.NumberColumn("Pages")
                         },
                         hide_index=True
                     )

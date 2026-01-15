@@ -58,7 +58,7 @@ def get_df():
 
         # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
-             return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration"])
+             return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration", "Pages"])
         
         df['ID_Google'] = df.index + 2
 
@@ -66,7 +66,7 @@ def get_df():
     return None
 
 
-def save_record(date, time, category, notes, duration):
+def save_record(date, time, category, notes, duration, pages=0):
     """
     Receive data and add a new row to the Google Sheets.
     """
@@ -74,14 +74,14 @@ def save_record(date, time, category, notes, duration):
 
     if sheet:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
-        row = [str(date), str(time), str(category), str(notes), int(duration)]
+        row = [str(date), str(time), str(category), str(notes), int(duration), int(pages)]
         
         # The function gets the list of [row], and inserts it without overwriting. This means it will paste into the next blank row.
         sheet.append_table([row], start='A2', dimension='ROWS', overwrite=False)
         return True
     return False
 
-def update_record(real_row_id,date, time, category, notes, duration):
+def update_record(real_row_id,date, time, category, notes, duration, pages=0):
     """
     Update a record based on the pandas index
     """
@@ -99,12 +99,13 @@ def update_record(real_row_id,date, time, category, notes, duration):
                 str(time), 
                 str(category), 
                 str(notes), 
-                int(duration)
+                int(duration),
+                int(pages)
             ]
             
             # Define the exact address (Range)
             # Ex: If the line is 10, the range will be "A10:D10"
-            range_address = f"A{google_row_number}:E{google_row_number}"
+            range_address = f"A{google_row_number}:F{google_row_number}"
             
             st.toast(f"💾 Changing row {google_row_number}")
             # Send the update command via range
