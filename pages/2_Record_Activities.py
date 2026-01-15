@@ -50,6 +50,10 @@ if not df.empty:
     df["Notes"] = df["Notes"].fillna("").astype(str)
     df["Duration"] = df["Duration"].fillna(0).astype(int)
     
+    if "Pages" in df.columns:
+        # Converte vazio para 0 e texto para número
+        df["Pages"] = pd.to_numeric(df["Pages"], errors='coerce').fillna(0).astype(int)
+    
     if "ID_Google" in df.columns:
         df["ID_Google"] = pd.to_numeric(df["ID_Google"], errors='coerce').fillna(0).astype(int)
 
