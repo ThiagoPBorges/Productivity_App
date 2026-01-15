@@ -107,7 +107,7 @@ with cl1:
         with kpi1:
             st.metric(
                 label="🔥 Streak",
-                value=f"{streak} days"
+                value=f"{streak} d"
             )
             
         with kpi2:
@@ -141,7 +141,7 @@ with cl2:
         with kpi1:
             st.metric(
                 label="🔥 Streak",
-                value=f"{streak} days"
+                value=f"{streak} d"
             )
             
         with kpi2:
@@ -176,7 +176,7 @@ with cl3:
         with kpi1:
             st.metric(
                 label="🔥 Streak",
-                value=f"{streak} days"
+                value=f"{streak} d"
             )
             
         with kpi2:
@@ -211,7 +211,7 @@ with cl4:
         with kpi1:
             st.metric(
                 label="🔥 Streak",
-                value=f"{streak} days"
+                value=f"{streak} d"
             )
             
         with kpi2:
@@ -246,7 +246,7 @@ with cl5:
         with kpi1:
             st.metric(
                 label="🔥 Streak",
-                value=f"{streak} days"
+                value=f"{streak} d"
             )
             
         with kpi2:
