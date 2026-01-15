@@ -267,6 +267,8 @@ if st.session_state["show_editor"]:
                         category_txt = str(current_data["Category"])
                         notes_txt = str(current_data["Notes"]) if pd.notna(current_data["Notes"]) else ""
                         time_txt = str(current_data["Time"]) if pd.notna(current_data["Time"]) else ""
+                        page_txt = str(current_data["Pages"]) if pd.notna(current_data["Pages"]) else ""
+
 
                         try:
                             dur_int = int(current_data["Duration"])
@@ -280,7 +282,8 @@ if st.session_state["show_editor"]:
                             time=time_txt,
                             category=category_txt,
                             notes=notes_txt,
-                            duration=dur_int
+                            duration=dur_int,
+                            pages=page_txt
                         )
                         
                         if not register_data:
