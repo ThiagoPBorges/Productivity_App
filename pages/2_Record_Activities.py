@@ -145,7 +145,7 @@ with st.container(border=True):
             pages = st.number_input("Pages of book", min_value=1, step=2)
         else:
             pages = 0
-            duration = st.number_input("Time Spent (minutes)", min_value=1, step=5)
+        duration = st.number_input("Time Spent (minutes)", min_value=1, step=5)
         notes = st.text_input("Detail of the activity")
 
     # Organizing them into columns to make them visual.
