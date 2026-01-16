@@ -9,7 +9,7 @@ import json
 @st.cache_resource
 '''
 
-def get_worksheet():
+def get_worksheet(sheet_name="database"):
     """
     Function:
     Check if 'credentials.json' exists (Local Use on PC).
@@ -38,19 +38,19 @@ def get_worksheet():
         gc = credentials.open_by_url(url)
 
         # Get my database from specific sheet
-        worksheet = gc.worksheet_by_title("database")
+        worksheet = gc.worksheet_by_title(sheet_name)
 
         return worksheet
     
     except Exception as e:
-        st.error(f"Erro de Conexão: {e}")
+        st.error(f"Erro de Conexão na aba {sheet_name}: {e}")
         return None
 
-def get_df():
+def get_df(sheet_name="database"):
     '''
     Conection usage for data load and tranform into a dataframe.
     '''
-    sheet = get_worksheet()
+    sheet = get_worksheet(sheet_name)
     
     if sheet:
         # Transforms my records into a dataframe
@@ -58,7 +58,10 @@ def get_df():
 
         # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
-             return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration", "Pages"])
+             if sheet_name == "books_library_d":
+                 return pd.DataFrame(columns=["Name_book", "Total_pages", "Status"])
+             else:
+                return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration", "Pages"])
         
         df['ID_Google'] = df.index + 2
 
@@ -70,7 +73,7 @@ def save_record(date, time, category, notes, duration, pages=0):
     """
     Receive data and add a new row to the Google Sheets.
     """
-    sheet = get_worksheet()
+    sheet = get_worksheet("database")
 
     if sheet:
         # Convert date to string (YYYY-MM-DD) for google sheets understand
