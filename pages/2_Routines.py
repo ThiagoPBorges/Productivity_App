@@ -1,19 +1,42 @@
 import pandas as pd
 import streamlit as st
 from database import get_df
+from database import save_book
+import numpy as np
 
+
+# Set page config
 st.set_page_config(
     page_title="Routine Planner",
     page_icon="📋",
     layout="wide"
-
 )
-# Load data
+
+# --- LOAD ALL DATA REQUIRED ---
 df_books = get_df("books_library_d")
 df_database = get_df()
 
-# --- SIDEBAR ---
+# --- CONFIGURATION : SESSION STATES ---
+# Set default state to hide the dataframe editor
+if "show_book_editor" not in st.session_state:
+    st.session_state["show_book_editor"] = False
 
+
+# ---------------- SIDEBAR ----------------
+
+# --- ACCESS CONTROL ---
+st.sidebar.header("🔐 Admin Area")
+input_pass = st.sidebar.text_input("Admin Password", type="password")
+# Verify if the password is right, the same of secrets on streamlit folder
+is_admin = False
+if "admin_password" in st.secrets:
+    if input_pass.strip() == st.secrets["admin_password"]:
+        is_admin = True
+        st.sidebar.success("Unlocked! 🔓")
+    elif input_pass:
+        st.sidebar.error("Wrong password 🔒")
+
+# --- NAVIGATION ---
 st.sidebar.header("Navigation")
 
 if not df_books.empty:
@@ -28,6 +51,9 @@ if not df_books.empty:
 
 else:
     st.warning("Any book found at library.")
+
+
+# ---------------- BOOK LIBRARY ----------------
 
 with st.container(border=True):
 
@@ -59,30 +85,62 @@ with st.container(border=True):
             step=1
         )
 
-    st.button(
-        label="Save new Book",
-        on_click=None,
-        key="save_new_book",
-        help="Include a new book to read in library."
-    )
+    c1, c2, c3, c4 = st.columns([1.4,1.5,1.5,6.5])
+
+    with c1:
+        if not is_admin:
+            st.button("💾 Save new Book", disabled=True)
+            st.caption("🔒 Login to edit records.")
+        else:
+            if st.button(label="💾 Save new Book"):
+                if book and Author and Pages:
+                    save_book(book, Author, Pages, "Reading")
+                st.success("✅ Book saved successfully!")
+                st.rerun()   
+
+    with c2:
+        if not is_admin:
+            st.button("✏️ Edit book library", disabled=True)
+        else:
+            st.session_state["show_book_editor"] = True
+            st.button("✏️ Edit book library")  
+
+    with c3:
+        if not is_admin:
+            st.button("🔄 Refresh Data", disabled=True)
+        else:
+            st.button("🔄 Refresh Data")
 
 
-
-st.write("📚 My books library")
-
-total_pages_read = df_database.groupby("Notes")["Pages"].sum()
+df_readings = df_database[df_database["Category"] == "Read"].copy()
+total_pages_read = df_readings.groupby("Notes")["Pages"].sum()
 df_books["Pages_Read"] = df_books["Name_book"].map(total_pages_read).fillna(0)
+df_books["Total_pages"] = df_books["Total_pages"].astype(int)
 
-st.dataframe(
-    df_books,
-    use_container_width=True,
-    hide_index=True,
-    column_config={"ID_Google": None}
+
+df_books["Status"] = np.where(
+    df_books["Pages_Read"] >= df_books["Total_pages"], 
+    "Finished", 
+    df_books["Status"]
 )
 
-st.header("Database")
-st.dataframe(
-    df_database,
-    use_container_width=True,
-    hide_index=True
-)
+
+if  st.session_state["show_book_editor"] == True:
+    st.subheader("✏️ Editor of records")
+    st.caption("Edit directly in table below and press Enter.")
+    df_visual = df_books.sort_values(by='Name_book', ascending=True)
+    df_visual = df_visual.reset_index(drop=True)
+    df_visual["ID_Google"] = df_visual["ID_Google"].astype(int)
+    st.data_editor(
+        df_visual,
+        width="stretch",
+        num_rows="fixed",
+        key="editor_table"
+    )
+elif st.session_state["show_book_editor"] == False:
+    st.dataframe(
+        df_books,
+        use_container_width=True,
+        hide_index=True,
+        column_config={"ID_Google": None}
+    )
