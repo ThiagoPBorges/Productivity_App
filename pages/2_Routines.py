@@ -3,6 +3,7 @@ import streamlit as st
 from database import get_df
 from database import save_book
 import numpy as np
+from datetime import date as dt
 
 
 # Set page config
@@ -20,6 +21,29 @@ df_database = get_df()
 # Set default state to hide the dataframe editor
 if "show_book_editor" not in st.session_state:
     st.session_state["show_book_editor"] = False
+
+
+# --- CALCULATIONS ---
+
+df_readings = df_database[df_database["Category"] == "Read"].copy()
+total_pages_read = df_readings.groupby("Notes")["Pages"].sum()
+df_books["Pages_Read"] = df_books["Name_book"].map(total_pages_read).fillna(0)
+df_books["Total_pages"] = df_books["Total_pages"].astype(int)
+
+df_books["Status"] = np.where(
+    df_books["Pages_Read"] >= df_books["Total_pages"], 
+    "Finished", 
+    df_books["Status"]
+)
+
+
+last_read_date = df_database.groupby("Notes")["Date"].max()
+df_books["Last_Activity"] = df_books["Name_book"].map(last_read_date)
+df_books["Date_Finished"] = np.where(
+df_books["Status"] == "Finished",
+df_books["Last_Activity"],
+"-"
+)
 
 
 # ---------------- SIDEBAR ----------------
@@ -95,34 +119,25 @@ with st.container(border=True):
             if st.button(label="💾 Save new Book"):
                 if book and Author and Pages:
                     save_book(book, Author, Pages, "Reading")
-                st.success("✅ Book saved successfully!")
-                st.rerun()   
+                    st.success("✅ Book saved successfully!")
+                    st.rerun()   
 
     with c2:
+        btn_txt = "❌ Close Editor" if st.session_state["show_book_editor"] else "✏️ Edit Library"
+        
         if not is_admin:
-            st.button("✏️ Edit book library", disabled=True)
+            st.button(btn_txt, disabled=True)
         else:
-            st.session_state["show_book_editor"] = True
-            st.button("✏️ Edit book library")  
+            if st.button(btn_txt):
+                st.session_state["show_book_editor"] = not st.session_state["show_book_editor"]
+                st.rerun() 
 
     with c3:
-        if not is_admin:
-            st.button("🔄 Refresh Data", disabled=True)
-        else:
-            st.button("🔄 Refresh Data")
+        if st.button("🔄 Refresh Data", disabled=not is_admin):
+            st.rerun()
 
 
-df_readings = df_database[df_database["Category"] == "Read"].copy()
-total_pages_read = df_readings.groupby("Notes")["Pages"].sum()
-df_books["Pages_Read"] = df_books["Name_book"].map(total_pages_read).fillna(0)
-df_books["Total_pages"] = df_books["Total_pages"].astype(int)
-
-
-df_books["Status"] = np.where(
-    df_books["Pages_Read"] >= df_books["Total_pages"], 
-    "Finished", 
-    df_books["Status"]
-)
+df_books = df_books.sort_values(by='Last_Activity', ascending=True)
 
 
 if  st.session_state["show_book_editor"] == True:
@@ -142,5 +157,5 @@ elif st.session_state["show_book_editor"] == False:
         df_books,
         use_container_width=True,
         hide_index=True,
-        column_config={"ID_Google": None}
+        column_config={"ID_Google": None, "Last_Activity": None}
     )
