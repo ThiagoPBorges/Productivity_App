@@ -30,19 +30,21 @@ total_pages_read = df_readings.groupby("Notes")["Pages"].sum()
 df_books["Pages_Read"] = df_books["Name_book"].map(total_pages_read).fillna(0)
 df_books["Total_pages"] = df_books["Total_pages"].astype(int)
 
+
+
+
+last_read_date = df_database.groupby("Notes")["Date"].max()
+df_books["Last_Activity"] = df_books["Name_book"].map(last_read_date).fillna("")
+df_books["Status_Display"] = np.where(
+    df_books["Pages_Read"] >= df_books["Total_pages"],
+    "✅ Finished (" + df_books["Last_Activity"] + ")",
+    "📖 Reading" 
+)
+
 df_books["Status"] = np.where(
     df_books["Pages_Read"] >= df_books["Total_pages"], 
     "Finished", 
     df_books["Status"]
-)
-
-
-last_read_date = df_database.groupby("Notes")["Date"].max()
-df_books["Last_Activity"] = df_books["Name_book"].map(last_read_date)
-df_books["Date_Finished"] = np.where(
-df_books["Status"] == "Finished",
-df_books["Last_Activity"],
-"-"
 )
 
 
@@ -137,7 +139,7 @@ with st.container(border=True):
             st.rerun()
 
 
-df_books = df_books.sort_values(by='Last_Activity', ascending=True)
+df_books = df_books.sort_values(by='Last_Activity', ascending=False)
 
 
 if  st.session_state["show_book_editor"] == True:
@@ -152,10 +154,26 @@ if  st.session_state["show_book_editor"] == True:
         num_rows="fixed",
         key="editor_table"
     )
+    
 elif st.session_state["show_book_editor"] == False:
+
+    df_books["Percentage"] = ((df_books["Pages_Read"] / df_books["Total_pages"]) * 100).fillna(0)
+
     st.dataframe(
         df_books,
         use_container_width=True,
         hide_index=True,
-        column_config={"ID_Google": None, "Last_Activity": None}
+        column_config={
+            "ID_Google" : None,
+            "Last_Activity" : None,
+            "Status" : None,
+            "Percentage": st.column_config.ProgressColumn(
+                "Progress",
+                help="Reading progress",
+                format="%.0f%%",
+                min_value=0,
+                max_value=100,
+                width="small"
+            ),
+        },    
     )
