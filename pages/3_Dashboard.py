@@ -88,197 +88,46 @@ def calculate_streak(df, category):
 
     return current_streak
 
+def create_kpi_card(icon, title, category, daily_goal, column):
+    with column:
+        with st.container(border=True):
+            st.subheader(icon + " " + title)
+
+            streak = calculate_streak(df_monthly, category)
+            month_goal = daily_goal * month_days
+            performed = df_monthly[df_monthly['Category'] == category]['Duration'].sum()
+
+            kpi1, kpi2 = st.columns(2)
+
+            with kpi1:
+                st.metric(
+                    label="🔥 Streak",
+                    value=f"{streak} d"
+                )
+                
+            with kpi2:
+                hours_done = round(performed/60, 1)
+                hours_goal = round(month_goal/60, 1)
+                delta_val = round(hours_done - hours_goal, 1)
+                
+                st.metric(
+                    label="⏱️ Output", 
+                    value=f"{hours_done}h",
+                    help=f"Goal: {hours_goal}h per month"
+                )
+            
+            progress = performed/month_goal
+            st.progress(min(progress, 1.0))
+            st.caption(f"{int(progress*100)}% completed")
+
 # Create 3 columns to bring Expected x Actual
 cl1,cl2,cl3,cl4,cl5 = st.columns(5)
 
-# Studies Goal
-with cl1:
-    with st.container(border=True):
-
-        st.subheader("📚 Studies")
-
-        streak = calculate_streak(df_monthly, 'Studies')
-        daily_study_goal = 60
-        month_study_goal = daily_study_goal * month_days
-        performed_study = df_monthly[df_monthly['Category'] == 'Studies']['Duration'].sum()
-
-        kpi1, kpi2 = st.columns(2)
-
-        with kpi1:
-            st.metric(
-                label="🔥 Streak",
-                value=f"{streak} d"
-            )
-            
-        with kpi2:
-            hours_done = round(performed_study/60, 1)
-            hours_goal = round(month_study_goal/60, 1)
-            delta_val = round(hours_done - hours_goal, 1)
-            
-            st.metric(
-                label="⏱️ Output", 
-                value=f"{hours_done}h",
-                help=f"Goal: {hours_goal}h per month"
-            )
-            
-        study_progress = performed_study/month_study_goal
-        st.progress(min(study_progress, 1.0))
-        st.caption(f"{int(study_progress*100)}% completed")
-
-# English Goal
-with cl2:
-    with st.container(border=True):
-        
-        st.subheader("🌍 English")
-
-        streak = calculate_streak(df_monthly, 'English') 
-        daily_english_goal = 30
-        month_english_goal = daily_english_goal * month_days
-        performed_english = df_monthly[df_monthly['Category'] == 'English']['Duration'].sum()
-
-        kpi1, kpi2 = st.columns(2)
-
-        with kpi1:
-            st.metric(
-                label="🔥 Streak",
-                value=f"{streak} d"
-            )
-            
-        with kpi2:
-            hours_done = round(performed_english/60, 1)
-            hours_goal = round(month_english_goal/60, 1)
-            delta_val = round(hours_done - hours_goal, 1)
-            
-            st.metric(
-                label="⏱️ Output", 
-                value=f"{hours_done}h",
-                help=f"Goal: {hours_goal}h per month"
-            )
-
-        english_progress = performed_english/month_english_goal
-        st.progress(min(english_progress, 1.0))
-        st.caption(f"{int(english_progress*100)}% completed")
-
-# Reading Goal
-with cl3:
-    with st.container(border=True):
-        
-        st.subheader("📖 Reading")
-
-        streak = calculate_streak(df_monthly, 'Read') 
-
-        daily_reading_goal = 30
-        month_reading_goal = daily_reading_goal * month_days
-        performed_reading = df_monthly[df_monthly['Category'] == 'Read']['Duration'].sum()
-
-        kpi1, kpi2 = st.columns(2)
-
-        with kpi1:
-            st.metric(
-                label="🔥 Streak",
-                value=f"{streak} d"
-            )
-            
-        with kpi2:
-            hours_done = round(performed_reading/60, 1)
-            hours_goal = round(month_reading_goal/60, 1)
-            delta_val = round(hours_done - hours_goal, 1)
-            
-            st.metric(
-                label="⏱️ Output", 
-                value=f"{hours_done}h",
-                help=f"Goal: {hours_goal}h per month"
-            )
-
-        reading_progress = performed_reading / month_reading_goal
-        st.progress(min(reading_progress, 1.0))
-        st.caption(f"{int(reading_progress*100)}% completed")
-
-# Personal projects goal
-with cl4:
-    with st.container(border=True):
-        
-        st.subheader("🛠️ Projects")
-
-        streak = calculate_streak(df_monthly, 'Personal projects') 
-
-        daily_projects_goal = 30
-        month_projects_goal = daily_projects_goal * month_days
-        performed_projects = df_monthly[df_monthly['Category'] == 'Personal projects']['Duration'].sum()
-
-        kpi1, kpi2 = st.columns(2)
-
-        with kpi1:
-            st.metric(
-                label="🔥 Streak",
-                value=f"{streak} d"
-            )
-            
-        with kpi2:
-            hours_done = round(performed_projects/60, 1)
-            hours_goal = round(month_projects_goal/60, 1)
-            delta_val = round(hours_done - hours_goal, 1)
-            
-            st.metric(
-                label="⏱️ Performance", 
-                value=f"{hours_done}h",
-                help=f"Goal: {hours_goal}h per month"
-            )
-
-        projects_progress = performed_projects / month_projects_goal
-        st.progress(min(projects_progress, 1.0))
-        st.caption(f"{int(projects_progress*100)}% completed")
-
-# Workout Goal
-with cl5:
-    with st.container(border=True):
-        
-        st.subheader("🏋️‍♂️ Workout")
-
-        streak = calculate_streak(df_monthly, 'Workout') 
-
-        daily_Workout_goal = 60
-        month_Workout_goal = daily_Workout_goal * month_days
-        performed_Workout = df_monthly[df_monthly['Category'] == 'Workout']['Duration'].sum()
-
-        kpi1, kpi2 = st.columns(2)
-
-        with kpi1:
-            st.metric(
-                label="🔥 Streak",
-                value=f"{streak} d"
-            )
-            
-        with kpi2:
-            hours_done = round(performed_Workout/60, 1)
-            hours_goal = round(month_Workout_goal/60, 1)
-            delta_val = round(hours_done - hours_goal, 1)
-            
-            st.metric(
-                label="⏱️ Output", 
-                value=f"{hours_done}h",
-                help=f"Goal: {hours_goal}h per month"
-            )
-
-        workout_progress = performed_Workout / month_Workout_goal
-        st.progress(min(workout_progress, 1.0))
-        st.caption(f"{int(workout_progress*100)}% completed")
-
-st.write("")
-
-# Pacing Logic
-days_passed = today.day
-expected = (daily_study_goal + daily_english_goal + daily_reading_goal) * days_passed 
-actual = df_monthly['Duration'].sum()
-
-delta_pacing = actual - expected
-
-if delta_pacing >= 0:
-    st.success(f"🚀 You are **{int(delta_pacing/60)}h ahead** of your study schedule for today!")
-else:
-    st.warning(f"⚠️ You are **{abs(int(delta_pacing/60))}h behind** schedule. Time to focus!")
-
-
+create_kpi_card("📚","Studies", "Studies", 60, cl1)
+create_kpi_card("🌍","English", "English", 30, cl2)
+create_kpi_card("📖","Reading", "Read", 30, cl3)
+create_kpi_card("🛠️","Projects", "Personal projects", 30, cl4)
+create_kpi_card("🏋️‍♂️","Workout", "Workout", 60, cl5)
 
 st.markdown("---")
 
@@ -307,7 +156,7 @@ with c1:
 # Groupy by category
 with c2:
     st.subheader(f"📊 Time Distribution")
-    category_distribution = df_monthly.groupby("Category")["hours"].sum().sort_values(ascending=False)
+    category_distribution = df_monthly.groupby("Category")["hours"].mean().round(2).sort_values(ascending=False)
     st.bar_chart(category_distribution, horizontal=True,color="#0c3ac5",
                  x_label="Hours", y_label="Category")
 
@@ -324,14 +173,14 @@ df_monthly['day_of_week'] = pd.Categorical(
     ordered=True
 )
 
-weekday_averages = df_monthly.groupby('day_of_week', observed=False)['hours'].sum()
+weekday_averages = df_monthly.groupby('day_of_week', observed=False)['hours'].mean().round(2)
 chart_data = weekday_averages.reset_index()
 chart_data.columns = ['Day', 'hours']
 
 st.subheader("📅 Weekly Performance Pattern")
 st.caption("Which is your most productive day?")
 
-chart = alt.Chart(chart_data).mark_bar(color="#ffaa00").encode(
+chart = alt.Chart(chart_data).mark_bar(color="#0c3ac5").encode(
     x=alt.X('Day', sort=days_order, title='Day of Week'),
     y=alt.Y('hours', title='Total Duration (hours)'),
     tooltip=['Day', 'hours']
