@@ -102,7 +102,7 @@ def create_kpi_card(icon, title, category, daily_goal, column):
             with kpi1:
                 st.metric(
                     label="🔥 Streak",
-                    value=f"{streak} d"
+                    value = f"{streak} day" if streak <= 1 else f"{streak} days"
                 )
                 
             with kpi2:
@@ -123,6 +123,7 @@ def create_kpi_card(icon, title, category, daily_goal, column):
 # Create 3 columns to bring Expected x Actual
 cl1,cl2,cl3,cl4,cl5 = st.columns(5)
 
+# Create cards = icon, title, category, daily_goal, column
 create_kpi_card("📚","Studies", "Studies", 60, cl1)
 create_kpi_card("🌍","English", "English", 30, cl2)
 create_kpi_card("📖","Reading", "Read", 30, cl3)

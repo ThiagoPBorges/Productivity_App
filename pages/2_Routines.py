@@ -16,6 +16,7 @@ st.set_page_config(
 # --- LOAD ALL DATA REQUIRED ---
 df_books = get_df("books_library_d")
 df_database = get_df()
+df_weekly_planner = get_df("weekly_planner")
 
 # --- CONFIGURATION : SESSION STATES ---
 # Set default state to hide the dataframe editor
@@ -177,3 +178,18 @@ elif st.session_state["show_book_editor"] == False:
             ),
         },    
     )
+
+
+
+week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+st.data_editor(
+    df_weekly_planner,
+    column_config={
+        "Day": st.column_config.SelectboxColumn(
+            "Dia da Semana",
+            options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        )
+    },
+    num_rows="dynamic"
+)

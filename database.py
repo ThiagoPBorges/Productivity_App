@@ -58,9 +58,11 @@ def get_df(sheet_name="database"):
 
         # If database is empty, create a visual database just to show what the model would look like.
         if df.empty:
-             if sheet_name == "books_library_d":
-                 return pd.DataFrame(columns=["Name_book", "Author", "Total_pages", "Status"])
-             else:
+            if sheet_name == "books_library_d":
+                return pd.DataFrame(columns=["Name_book", "Author", "Total_pages", "Status"])
+            elif sheet_name == "weekly_planner":
+                return pd.DataFrame(columns=["Day", "Activity", "Notes", "Time"])
+            else:
                 return pd.DataFrame(columns=["Date", "Time", "Category", "Notes", "Duration", "Pages"])
         
         df['ID_Google'] = df.index + 2
