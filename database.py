@@ -174,3 +174,20 @@ def update_book(real_row_id,Name_book, Author, Total_pages, Status):
             return False
                 
     return False
+
+def save_planner(df):
+    """
+    Clean the sheet and overwrite with a new planner
+    """
+    try:
+        planner = get_worksheet("weekly_planner")
+
+        planner.clear()
+
+        df_clean = df.fillna("")
+
+        planner.set_dataframe(df_clean, (1,1))
+
+    except Exception as e:
+        st.error(f"Erro ao salvar Planner: {e}")
+        return False

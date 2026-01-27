@@ -4,6 +4,8 @@ from database import get_df
 from database import save_book
 import numpy as np
 from datetime import date as dt
+from database import save_planner
+
 
 
 # Set page config
@@ -183,13 +185,30 @@ elif st.session_state["show_book_editor"] == False:
 
 week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-st.data_editor(
+edited_planner = st.data_editor(
     df_weekly_planner,
     column_config={
+        'ID_Google' : None,
         "Day": st.column_config.SelectboxColumn(
-            "Dia da Semana",
+            "Day of week",
             options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        ),
+        "Activity": st.column_config.SelectboxColumn(
+            "Activity",
+            options=["Python", "SQL", "Power BI", "AI","Personal Project", "Read", "NativeCamp" "Free to choose"]
+        ),
+        "Time": st.column_config.SelectboxColumn(
+            "Activity",
+            options=["60", "45", "30", "15", "05"]
         )
     },
-    num_rows="dynamic"
+    num_rows="dynamic",
+    hide_index=True
 )
+
+if st.button("💾 Save changes"):
+
+    saved = save_planner(edited_planner)
+    
+    if saved:
+        st.success("Updated Planner!")
