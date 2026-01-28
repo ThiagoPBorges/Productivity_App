@@ -3,7 +3,7 @@ import streamlit as st
 from database import get_df
 from database import save_book
 import numpy as np
-from datetime import date as dt
+from datetime import date, datetime as dt
 from database import save_planner
 
 
@@ -81,6 +81,27 @@ if not df_books.empty:
 else:
     st.warning("Any book found at library.")
 
+# --- DAYS OF WEEK ---
+
+if not df_weekly_planner.empty:
+
+    days_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days_week_list = ["All"] + days_week
+
+    today_num = dt.now().weekday()
+    
+    default_index = today_num + 1
+
+    selected_day = st.sidebar.selectbox(
+        "Days Week",
+        days_week_list,
+        index=default_index
+    )
+
+    if selected_day != "All":
+        df_weekly_planner = df_weekly_planner[df_weekly_planner["Day"] == selected_day]
+else:
+    st.warning("Any activity day found at planner.")
 
 # ---------------- BOOK LIBRARY ----------------
 
@@ -183,23 +204,33 @@ elif st.session_state["show_book_editor"] == False:
 
 
 
-week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 edited_planner = st.data_editor(
-    df_weekly_planner,
+    df_weekly_planner.reset_index(drop=True),
     column_config={
         'ID_Google' : None,
         "Day": st.column_config.SelectboxColumn(
             "Day of week",
-            options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            required=True
         ),
         "Activity": st.column_config.SelectboxColumn(
             "Activity",
-            options=["Python", "SQL", "Power BI", "AI","Personal Project", "Read", "NativeCamp" "Free to choose"]
+            options=[
+                "🐍 Python", 
+                "🗄️ SQL", 
+                "📊 Power BI", 
+                "🤖 AI", 
+                "🛠️ Personal Project", 
+                "⚙️ Automation", 
+                "🪁 Free to choose"
+            ],
+            required=True
         ),
         "Time": st.column_config.SelectboxColumn(
-            "Activity",
-            options=["60", "45", "30", "15", "05"]
+            "Time",
+            options=[60, 45, 30, 15, 5],
+            required=True
         )
     },
     num_rows="dynamic",
