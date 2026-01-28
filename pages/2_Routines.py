@@ -5,8 +5,7 @@ from database import save_book
 import numpy as np
 from datetime import date, datetime as dt
 from database import save_planner
-
-
+import pytz
 
 # Set page config
 st.set_page_config(
@@ -88,7 +87,8 @@ if not df_weekly_planner.empty:
     days_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     days_week_list = ["All"] + days_week
 
-    today_num = dt.now().weekday()
+    br_timezone = pytz.timezone('America/Sao_Paulo')
+    today_num = dt.now(br_timezone).weekday()
     
     default_index = today_num + 1
 

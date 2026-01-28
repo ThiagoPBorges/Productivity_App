@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 
 # Code to run the app
-# streamlit run 1_Home.py
+# python -m streamlit run 1_Home.py
 
 # Set page config
 st.set_page_config(
