@@ -74,8 +74,10 @@ if not df_books.empty:
 
     selected_status = st.sidebar.selectbox("Status", status_all)
 
+    df_view = df_weekly_planner.copy()
+    
     if selected_status != "All":
-        df_books = df_books[df_books["Status"] == selected_status]
+        df_view = df_view[df_view["Status"] == selected_status]
 
 else:
     st.warning("Any book found at library.")
@@ -92,16 +94,11 @@ if not df_weekly_planner.empty:
     
     default_index = today_num + 1
 
-    selected_day = st.sidebar.selectbox(
+    selected_day_filter = st.sidebar.selectbox(
         "Days Week",
         days_week_list,
         index=default_index
     )
-
-    if selected_day != "All":
-        df_weekly_planner = df_weekly_planner[df_weekly_planner["Day"] == selected_day]
-else:
-    st.warning("Any activity day found at planner.")
 
 # ---------------- BOOK LIBRARY ----------------
 
@@ -202,44 +199,61 @@ elif st.session_state["show_book_editor"] == False:
         },    
     )
 
+# ---------------- WEEKLY PLANNER ----------------
 
+st.divider()
+st.header("📅 Weekly Master Plan")
 
+# 1. ÁREA DE VISUALIZAÇÃO (Aqui usamos o filtro da Sidebar com segurança)
+if selected_day_filter != "All":
+    st.info(f"Visualizing Focus: **{selected_day_filter}**")
+    # Criamos uma cópia temporária só para mostrar
+    df_focus = df_weekly_planner[df_weekly_planner["Day"] == selected_day_filter]
+    st.dataframe(df_focus, use_container_width=True, hide_index=True)
+    edit_button = st.button("Edit data", disabled=not is_admin)
+else:
+    if is_admin == True:
+        if st.button("Edit data", disabled=not is_admin):
 
-edited_planner = st.data_editor(
-    df_weekly_planner.reset_index(drop=True),
-    column_config={
-        'ID_Google' : None,
-        "Day": st.column_config.SelectboxColumn(
-            "Day of week",
-            options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-            required=True
-        ),
-        "Activity": st.column_config.SelectboxColumn(
-            "Activity",
-            options=[
-                "🐍 Python", 
-                "🗄️ SQL", 
-                "📊 Power BI", 
-                "🤖 AI", 
-                "🛠️ Personal Project", 
-                "⚙️ Automation", 
-                "🪁 Free to choose"
-            ],
-            required=True
-        ),
-        "Time": st.column_config.SelectboxColumn(
-            "Time",
-            options=[60, 45, 30, 15, 5],
-            required=True
-        )
-    },
-    num_rows="dynamic",
-    hide_index=True
-)
+            # 2. ÁREA DE EDIÇÃO (Sempre mostra TUDO para garantir salvamento seguro)
+            st.subheader("📝 Edit Full Plan")
+            st.caption("⚠️ The editor below always shows the full week to prevent data loss.")
 
-if st.button("💾 Save changes"):
+            edited_planner = st.data_editor(
+                df_weekly_planner.reset_index(drop=True),
+                column_config={
+                    'ID_Google' : None,
+                    "Day": st.column_config.SelectboxColumn(
+                        "Day of week",
+                        options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                        required=True
+                    ),
+                    "Activity": st.column_config.SelectboxColumn(
+                        "Activity",
+                        options=[
+                            "🐍 Python", 
+                            "🗄️ SQL", 
+                            "📊 Power BI", 
+                            "🤖 AI", 
+                            "🛠️ Personal Project", 
+                            "⚙️ Automation", 
+                            "🪁 Free to choose"
+                        ],
+                        required=True
+                    ),
+                    "Time": st.column_config.SelectboxColumn(
+                        "Time",
+                        options=[60, 45, 30, 15, 5],
+                        required=True
+                    )
+                },
+                num_rows="dynamic",
+                hide_index=True
+            )
 
-    saved = save_planner(edited_planner)
-    
-    if saved:
-        st.success("Updated Planner!")
+            if st.button("💾 Save changes"):
+
+                saved = save_planner(edited_planner)
+                
+                if saved:
+                    st.success("Updated Planner!")

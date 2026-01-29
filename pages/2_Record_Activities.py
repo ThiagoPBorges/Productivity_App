@@ -230,7 +230,8 @@ if st.session_state["show_editor"]:
                             "Duration": st.column_config.NumberColumn("Duration (min)"),
                             "Pages": st.column_config.NumberColumn("Pages")
                         },
-                        hide_index=True
+                        hide_index=True,
+                        num_rows="dynamic"
                     )
             
             changes = st.session_state["editor_table"]["edited_rows"]
