@@ -73,32 +73,13 @@ if not df_books.empty:
     status_all = ["All"] + unique_status
 
     selected_status = st.sidebar.selectbox("Status", status_all)
-
-    df_view = df_weekly_planner.copy()
     
     if selected_status != "All":
-        df_view = df_view[df_view["Status"] == selected_status]
+        df_books = df_books[df_books["Status"] == selected_status]
 
 else:
     st.warning("Any book found at library.")
 
-# --- DAYS OF WEEK ---
-
-if not df_weekly_planner.empty:
-
-    days_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    days_week_list = ["All"] + days_week
-
-    br_timezone = pytz.timezone('America/Sao_Paulo')
-    today_num = dt.now(br_timezone).weekday()
-    
-    default_index = today_num + 1
-
-    selected_day_filter = st.sidebar.selectbox(
-        "Days Week",
-        days_week_list,
-        index=default_index
-    )
 
 # ---------------- BOOK LIBRARY ----------------
 
@@ -204,56 +185,82 @@ elif st.session_state["show_book_editor"] == False:
 st.divider()
 st.header("📅 Weekly Master Plan")
 
-# 1. ÁREA DE VISUALIZAÇÃO (Aqui usamos o filtro da Sidebar com segurança)
-if selected_day_filter != "All":
-    st.info(f"Visualizing Focus: **{selected_day_filter}**")
-    # Criamos uma cópia temporária só para mostrar
-    df_focus = df_weekly_planner[df_weekly_planner["Day"] == selected_day_filter]
-    st.dataframe(df_focus, use_container_width=True, hide_index=True)
-    edit_button = st.button("Edit data", disabled=not is_admin)
-else:
-    if is_admin == True:
-        if st.button("Edit data", disabled=not is_admin):
+# --- FILTRO DE VISUALIZAÇÃO ---
+c1, c2, c3 = st.columns(3)
+with c1:
+    days_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days_week_list = ["All days"] + days_week
 
-            # 2. ÁREA DE EDIÇÃO (Sempre mostra TUDO para garantir salvamento seguro)
-            st.subheader("📝 Edit Full Plan")
-            st.caption("⚠️ The editor below always shows the full week to prevent data loss.")
+    br_timezone = pytz.timezone('America/Sao_Paulo')
+    today_num = dt.now(br_timezone).weekday()
+    default_index = today_num + 1
 
-            edited_planner = st.data_editor(
-                df_weekly_planner.reset_index(drop=True),
-                column_config={
-                    'ID_Google' : None,
-                    "Day": st.column_config.SelectboxColumn(
-                        "Day of week",
-                        options=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                        required=True
-                    ),
-                    "Activity": st.column_config.SelectboxColumn(
-                        "Activity",
-                        options=[
-                            "🐍 Python", 
-                            "🗄️ SQL", 
-                            "📊 Power BI", 
-                            "🤖 AI", 
-                            "🛠️ Personal Project", 
-                            "⚙️ Automation", 
-                            "🪁 Free to choose"
-                        ],
-                        required=True
-                    ),
-                    "Time": st.column_config.SelectboxColumn(
-                        "Time",
-                        options=[60, 45, 30, 15, 5],
-                        required=True
-                    )
-                },
-                num_rows="dynamic",
-                hide_index=True
+    selected_day_filter = st.selectbox(
+        "Focus on Day (Visual Only)",
+        days_week_list,
+        index=default_index
+    )
+
+# --- LÓGICA DE EXIBIÇÃO ---
+
+# 1. Se o Editor estiver ATIVO e for ADMIN
+if st.session_state["show_planner_editor"] and is_admin:
+    
+    # Botão para fechar
+    if st.button("❌ Close Planner Editor"):
+        st.session_state["show_planner_editor"] = False
+        st.rerun()
+
+    st.subheader("📝 Edit Full Plan")
+    st.caption("⚠️ Editing Mode: Showing full week to prevent data loss.")
+
+    # CORREÇÃO 3: Mostra a tabela COMPLETA no editor
+    edited_planner = st.data_editor(
+        df_weekly_planner,
+        column_config={
+            'ID_Google' : None,
+            "Day": st.column_config.SelectboxColumn(
+                "Day",
+                options=days_week,
+                required=True
+            ),
+            "Activity": st.column_config.SelectboxColumn(
+                "Activity",
+                options=["🐍 Python", "🗄️ SQL", "📊 Power BI", "🤖 AI", "🛠️ Personal Project", "⚙️ Automation", "🪁 Free to choose"],
+                required=True
+            ),
+            "Time": st.column_config.SelectboxColumn(
+                "Time",
+                options=[60, 45, 30, 15, 5],
+                required=True
             )
+        },
+        num_rows="dynamic",
+        hide_index=True,
+        use_container_width=True
+    )
 
-            if st.button("💾 Save changes"):
+    if st.button("💾 Save Planner Changes"):
+        saved = save_planner(edited_planner)
+        if saved:
+            st.success("✅ Planner updated successfully!")
+            st.cache_data.clear()
+            st.rerun()
 
-                saved = save_planner(edited_planner)
-                
-                if saved:
-                    st.success("Updated Planner!")
+# 2. Se o Editor estiver FECHADO (Modo Visualização)
+else:
+    # Botão para abrir (só admin vê)
+    if is_admin:
+        if st.button("✏️ Edit Full Plan"):
+            st.session_state["show_planner_editor"] = True
+            st.rerun()
+    
+    # Mostra a tabela filtrada bonitinha
+    if selected_day_filter != "All days":
+        df_view = df_weekly_planner[df_weekly_planner["Day"] == selected_day_filter]
+        st.info(f"Showing focus for: **{selected_day_filter}**")
+    else:
+        df_view = df_weekly_planner
+        st.info("Showing Full Week Overview")
+
+    st.dataframe(df_view, use_container_width=True, hide_index=True)

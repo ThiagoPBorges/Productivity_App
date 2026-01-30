@@ -219,7 +219,6 @@ if st.session_state["show_editor"]:
             df_edited = st.data_editor(
                         df_visual,
                         width="stretch",
-                        num_rows="fixed",
                         key="editor_table",
                         column_config={
                             "ID_Google": None,
@@ -230,8 +229,8 @@ if st.session_state["show_editor"]:
                             "Duration": st.column_config.NumberColumn("Duration (min)"),
                             "Pages": st.column_config.NumberColumn("Pages")
                         },
-                        hide_index=True,
-                        num_rows="dynamic"
+                        num_rows="dynamic",
+                        hide_index=True
                     )
             
             changes = st.session_state["editor_table"]["edited_rows"]
