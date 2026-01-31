@@ -248,6 +248,10 @@ else:
         else:
             df_view = df_weekly_planner
 
-        st.dataframe(df_view, use_container_width=True, hide_index=True)
+        st.dataframe(df_view,
+                     column_config={
+                         'ID_Google' : None
+                     }
+                     , use_container_width=True, hide_index=True)
 
         st.button("✏️ Edit Full Plan", disabled=True)
