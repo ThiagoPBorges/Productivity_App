@@ -185,7 +185,7 @@ elif st.session_state["show_book_editor"] == False:
 st.divider()
 st.header("📅 Weekly Master Plan")
 
-# --- FILTRO DE VISUALIZAÇÃO ---
+
 c1, c2, c3 = st.columns(3)
 with c1:
     days_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -201,20 +201,10 @@ with c1:
         index=default_index
     )
 
-# --- LÓGICA DE EXIBIÇÃO ---
 
-# 1. Se o Editor estiver ATIVO e for ADMIN
-if st.session_state["show_planner_editor"] and is_admin:
-    
-    # Botão para fechar
-    if st.button("❌ Close Planner Editor"):
-        st.session_state["show_planner_editor"] = False
-        st.rerun()
 
-    st.subheader("📝 Edit Full Plan")
-    st.caption("⚠️ Editing Mode: Showing full week to prevent data loss.")
+if is_admin:
 
-    # CORREÇÃO 3: Mostra a tabela COMPLETA no editor
     edited_planner = st.data_editor(
         df_weekly_planner,
         column_config={
@@ -240,27 +230,24 @@ if st.session_state["show_planner_editor"] and is_admin:
         use_container_width=True
     )
 
-    if st.button("💾 Save Planner Changes"):
+    save_edited_planner = st.button("✏️ Edit Full Plan")
+
+    if save_edited_planner:
         saved = save_planner(edited_planner)
         if saved:
             st.success("✅ Planner updated successfully!")
             st.cache_data.clear()
             st.rerun()
 
-# 2. Se o Editor estiver FECHADO (Modo Visualização)
-else:
-    # Botão para abrir (só admin vê)
-    if is_admin:
-        if st.button("✏️ Edit Full Plan"):
-            st.session_state["show_planner_editor"] = True
-            st.rerun()
-    
-    # Mostra a tabela filtrada bonitinha
-    if selected_day_filter != "All days":
-        df_view = df_weekly_planner[df_weekly_planner["Day"] == selected_day_filter]
-        st.info(f"Showing focus for: **{selected_day_filter}**")
-    else:
-        df_view = df_weekly_planner
-        st.info("Showing Full Week Overview")
 
-    st.dataframe(df_view, use_container_width=True, hide_index=True)
+else:
+    if not is_admin:
+        if selected_day_filter != "All days":
+            df_view = df_weekly_planner[df_weekly_planner["Day"] == selected_day_filter]
+
+        else:
+            df_view = df_weekly_planner
+
+        st.dataframe(df_view, use_container_width=True, hide_index=True)
+
+        st.button("✏️ Edit Full Plan", disabled=True)
